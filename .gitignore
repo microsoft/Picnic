@@ -250,3 +250,13 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Project specfic files
+data/*.bin
+data/*.h
+*.o
+benchmark_lowmc
+example
+preprocessMatrices
+*.exe
+
