@@ -1,7 +1,8 @@
 
 CC=gcc
-CFLAGS= -O3 -march=native -Wall -std=gnu99 -D__LINUX__ -D__X64__
-CFLAGS_DEBUG= -g -march=native -Wall -std=gnu99 -fsanitize=address -D__LINUX__ -D__X64__
+WARNING_FLAGS=-Wall -Wextra -Wpedantic -Werror
+CFLAGS= -O3 -march=native $(WARNING_FLAGS) -std=gnu99 -D__LINUX__ -D__X64__
+CFLAGS_DEBUG= -g -march=native $(WARNING_FLAGS) -std=gnu99 -fsanitize=address -D__LINUX__ -D__X64__
 LDFLAGS= -lcrypto
 
 SOURCES= LowMC.c test_util.c benchmark_lowmc.c picnic.c LowMCEnc.c

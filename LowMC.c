@@ -44,6 +44,8 @@
 #define H_FOR_CHALLENGE_PREFIX 1
 #define G_PREFIX 2
 
+#define UNUSED_PARAMETER(x) (void)(x)
+
 
 /* Type definitions */
 typedef struct randomTape_t {
@@ -433,7 +435,7 @@ void print_hex(const char* s, uint8_t* data, size_t len)
 }
 
 void H3(const uint32_t* circuitOutput, uint32_t* viewOutputs[NUM_ZKB_ROUNDS][3],
-        size_t circuitOutputLengthWords, commitments_t* as, uint32_t numRounds,
+        commitments_t* as, uint32_t numRounds,
         uint8_t* challengeBits, const uint8_t* message, size_t messageByteLength,
         transform_t transform, unruh_permutations_t gs[NUM_ZKB_ROUNDS], lowmcparams_t* params)
 {
@@ -825,14 +827,18 @@ void mpc_substitution2(uint32_t* state[2], randomTape_t* rand, view_t* view1,
 
 
 #ifdef WITH_AVX
-void verifyLowMC(const proof_t* proof, view_t* view1, view_t* view2,
-                 randomTape_t* tapes, size_t inputLengthBits, uint32_t* slab,
+void verifyLowMC(view_t* view1, view_t* view2,
+                 randomTape_t* tapes, uint32_t* slab,
                  const uint32_t* pubInput, lowmcparams_t* params)
 {
     uint32_t* keyShares[2];
     __m256i roundKeyVec[2];
     __m256i stateVec[2];
     __m256i tempVec[2];
+
+    /* The slab parameter is unused, but we must keep it so the AVX
+     * and non-AVX versions of this function have the same signature */
+    UNUSED_PARAMETER(slab); 
 
     memset(&roundKeyVec[0], 0, 2 * params->stateSizeBytes);
 
@@ -850,7 +856,7 @@ void verifyLowMC(const proof_t* proof, view_t* view1, view_t* view2,
 
     __m256i roundConstantVec[2];
 
-    for (int r = 1; r <= params->numRounds; r++) {
+    for (uint32_t r = 1; r <= params->numRounds; r++) {
         /* initialize both roundkeys to 0. they are contingent */
         memset(&roundKeyVec[0], 0, 2 * params->stateSizeBytes);
         roundConstantVec[0] = roundConstantVec[1] = roundConstantsVec[r - 1][0];
@@ -871,8 +877,8 @@ void verifyLowMC(const proof_t* proof, view_t* view1, view_t* view2,
     memcpy(view2->outputShare, &stateVec[1], params->stateSizeBytes);
 }
 #else
-void verifyLowMC(const proof_t* const proof, view_t* view1, view_t* view2,
-                 randomTape_t* tapes, size_t inputLengthBits, uint32_t* slab,
+void verifyLowMC(view_t* view1, view_t* view2,
+                 randomTape_t* tapes, uint32_t* slab,
                  const uint32_t* pubInput, lowmcparams_t* params)
 {
     uint32_t* state[2];
@@ -926,7 +932,7 @@ void verifyLowMC(const proof_t* const proof, view_t* view1, view_t* view2,
 #endif
 
 void verifyProof(const proof_t* proof, view_t* view1, view_t* view2,
-                 uint8_t challenge, size_t inputLengthBytes, uint32_t* slab,
+                 uint8_t challenge, uint32_t* slab,
                  const uint32_t* pubInput, const uint8_t iv[16], randomTape_t* tape, lowmcparams_t* params)
 {
 
@@ -998,8 +1004,7 @@ void verifyProof(const proof_t* proof, view_t* view1, view_t* view2,
 
     free(randBuff);
 
-    verifyLowMC(proof, view1, view2, tape, inputLengthBytes * 8, slab,
-                pubInput, params);
+    verifyLowMC(view1, view2, tape, slab, pubInput, params);
 }
 
 int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* pubInput,
@@ -1047,7 +1052,7 @@ int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* pubInput,
 
         verifyProof(&proofs[i], &view1s[i], &view2s[i],
                     getChallenge(received_challengebits, i),
-                    params->stateSizeBytes, slab, pubInput, iv, tape, params);
+                    slab, pubInput, iv, tape, params);
     }
 
     unruh_permutations_t* gs = NULL;
@@ -1094,7 +1099,7 @@ int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* pubInput,
 
     computed_challengebits = malloc(numBytes(2 * NUM_ZKB_ROUNDS));
 
-    H3(pubKey, viewOutputs, params->stateSizeWords, as, NUM_ZKB_ROUNDS,
+    H3(pubKey, viewOutputs, as, NUM_ZKB_ROUNDS,
        computed_challengebits, message, messageByteLength, transform, gs, params);
 
     if (computed_challengebits != NULL &&
@@ -1320,7 +1325,7 @@ void mpc_substitution(uint32_t* state[3], randomTape_t* rand, view_t views[3],
 #endif
 
 #ifdef WITH_AVX
-void mpc_LowMC(size_t inputLengthBits, randomTape_t* tapes, view_t views[3],
+void mpc_LowMC(randomTape_t* tapes, view_t views[3],
                uint32_t* countY, const uint32_t* pubInput, uint32_t* slab, lowmcparams_t* params)
 {
     uint32_t* keyShares[3];
@@ -1329,6 +1334,10 @@ void mpc_LowMC(size_t inputLengthBits, randomTape_t* tapes, view_t views[3],
     __m256i state[3];
     __m256i temp[3];
     __m256i roundConstant[3];
+
+    /* The slab parameter is unused, but we must keep it so the AVX
+     * and non-AVX versions of this function have the same signature */
+    UNUSED_PARAMETER(slab); 
 
     memset(&roundKey[0], 0, 3 * params->stateSizeBytes);
 
@@ -1340,7 +1349,7 @@ void mpc_LowMC(size_t inputLengthBits, randomTape_t* tapes, view_t views[3],
     computeRoundKey(keyShares, roundKey, 0, params);
     mpc_xor_vec3(state, roundKey, state);
 
-    for (int r = 1; r <= params->numRounds; r++) {
+    for (uint32_t r = 1; r <= params->numRounds; r++) {
         memset(&roundKey[0], 0, 3 * params->stateSizeBytes);
 
         roundConstant[0] = roundConstant[1] = roundConstant[2] = roundConstantsVec[r - 1][0];
@@ -1361,7 +1370,7 @@ void mpc_LowMC(size_t inputLengthBits, randomTape_t* tapes, view_t views[3],
 
 }
 #else
-void mpc_LowMC(size_t inputLengthBits, randomTape_t* tapes, view_t views[3],
+void mpc_LowMC(randomTape_t* tapes, view_t views[3],
                uint32_t* countY, const uint32_t* pubInput, uint32_t* slab, lowmcparams_t* params)
 {
     uint32_t* keyShares[3];
@@ -1407,12 +1416,12 @@ void mpc_LowMC(size_t inputLengthBits, randomTape_t* tapes, view_t views[3],
 }
 #endif
 
-void runMPC(size_t inputByteLength, view_t views[3], randomTape_t* rand,
+void runMPC(view_t views[3], randomTape_t* rand,
             uint32_t* pubInput, uint32_t* slab, lowmcparams_t* params)
 {
     rand->pos = 0;
     uint32_t commBitCount = 0;
-    mpc_LowMC(inputByteLength * 8, rand, views, &commBitCount, pubInput, slab, params);
+    mpc_LowMC(rand, views, &commBitCount, pubInput, slab, params);
 }
 
 
@@ -1528,7 +1537,7 @@ int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, uint8_t* me
 
     //Running MPC
     for (int k = 0; k < NUM_ZKB_ROUNDS; k++) {
-        runMPC(params->stateSizeBytes, views[k], &tape[k],
+        runMPC(views[k], &tape[k],
                pubInput, slab, params);
     }
 
@@ -1561,7 +1570,7 @@ int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, uint8_t* me
         output[j] = viewOutputs[0][0][j] ^ viewOutputs[0][1][j] ^ viewOutputs[0][2][j];
     }
 
-    H3(output, viewOutputs, params->stateSizeWords, as, NUM_ZKB_ROUNDS,
+    H3(output, viewOutputs, as, NUM_ZKB_ROUNDS,
        sig->challengeBits, message, messageByteLength, transform, gs, params);
 
     //Packing Z
