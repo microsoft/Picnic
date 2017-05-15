@@ -154,7 +154,7 @@ int picnic_keygen(picnic_params_t parameters, picnic_publickey_t* pk,
  *
  * @see picnic_verify(), picnic_keygen(), picnic_signature_size()
  */
-int picnic_sign(picnic_privatekey_t* sk, uint8_t* message, size_t message_len,
+int picnic_sign(picnic_privatekey_t* sk, const uint8_t* message, size_t message_len,
                 uint8_t* signature, size_t* signature_len);
 
 /**
@@ -181,16 +181,16 @@ size_t picnic_signature_size(picnic_params_t parameters);
  * @param[in] pk      The signer's public key.
  * @param[in] message The message the signature purpotedly signs.
  * @param[in] message_len The length of the message, in bytes.
- * @param[out] signature The signature
- * @param[in,out] signature_len The length of the signature.
+ * @param[in] signature The signature to verify.
+ * @param[in] signature_len The length of the signature.
  *
  * @return Returns 0 for success, indicating a valid signature, or a nonzero
  * value indicating an error or an invalid signature.
  *
  * @see picnic_sign(), picnic_keygen()
  */
-int picnic_verify(picnic_publickey_t* pk, uint8_t* message, size_t message_len,
-                  uint8_t* signature, size_t signature_len);
+int picnic_verify(picnic_publickey_t* pk, const uint8_t* message, size_t message_len,
+                  const uint8_t* signature, size_t signature_len);
 
 /**
  * Serialize a public key.
@@ -202,19 +202,19 @@ int picnic_verify(picnic_publickey_t* pk, uint8_t* message, size_t message_len,
  *
  * @return Returns the number of bytes written.
  */
-int picnic_write_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen);
+int picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t buflen);
 
 /**
  * De-serialize a public key.
  *
- * @param[in]  key The public key object to be populated.
- * @param[out] buf The buffer to read the public key from.
+ * @param[out]  key The public key object to be populated.
+ * @param[in] buf The buffer to read the public key from.
  *                 Must be at least PICNIC_MAX_PUBLICKEY_SIZE + 1 bytes.
  * @param[in]  buflen The length of buf, in bytes
  *
  * @return Returns the number of bytes written.
  */
-int picnic_read_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen);
+int picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t buflen);
 
 /**
  * Serialize a private key.
@@ -226,79 +226,20 @@ int picnic_read_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen)
  *
  * @return Returns the number of bytes written.
  */
-int picnic_write_private_key(picnic_privatekey_t* key, uint8_t* buf, size_t buflen);
+int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_t buflen);
 
 /**
  * De-serialize a private key.
  *
- * @param[in]  key The private key object to be populated
- * @param[out] buf The buffer to write the key to.
+ * @param[out]  key The private key object to be populated
+ * @param[in] buf The buffer to read the key from.
  *                 Must have size at least PICNIC_MAX_PRIVATEKEY_SIZE + 1 bytes.
  * @param[in]  buflen The length of buf, in bytes
  * @param[in]  publickey The corresponding public key
  *
  * @return Returns 0 on success, or a nonzero value indicating an error.
  */
-int picnic_read_private_key(picnic_privatekey_t* key, uint8_t* buf, size_t buflen, picnic_publickey_t* publickey);
-
-/**
- * Check that a key pair is valid.
- *
- * @param[in] privatekey The private key to check
- * @param[in] publickey The public key to check
- *
- * @return Returns 0 if the key pair is valid, or a nonzero value indicating an error
- */
-int picnic_validate_keypair(const picnic_privatekey_t* privatekey, const picnic_publickey_t* publickey);
-
-/**
- * Serialize a public key.
- *
- * @param[in]  key The public key to serialize
- * @param[out] buf The buffer to write the key to.
- *                 Must have size at least PICNIC_MAX_PUBLICKEY_SIZE + 1 bytes.
- * @param[in]  buflen The length of buf, in bytes
- *
- * @return Returns the number of bytes written.
- */
-int picnic_write_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen);
-
-/**
- * De-serialize a public key.
- *
- * @param[in]  key The public key object to be populated.
- * @param[out] buf The buffer to read the public key from.
- *                 Must be at least PICNIC_MAX_PUBLICKEY_SIZE + 1 bytes.
- * @param[in]  buflen The length of buf, in bytes
- *
- * @return Returns 0 on success or a nonzer value indicating an error.
- */
-int picnic_read_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen);
-
-/**
- * Serialize a private key.
- *
- * @param[in]  key The private key to serialize
- * @param[out] buf The buffer to write the key to.
- *                 Must have size at least PICNIC_MAX_PRIVATEKEY_SIZE + 1 bytes.
- * @param[in]  buflen The length of buf, in bytes
- *
- * @return Returns the number of bytes written.
- */
-int picnic_write_private_key(picnic_privatekey_t* key, uint8_t* buf, size_t buflen);
-
-/**
- * De-serialize a private key.
- *
- * @param[in]  key The private key object to be populated
- * @param[out] buf The buffer to read the key from.
- *                 Must have size at least PICNIC_MAX_PRIVATEKEY_SIZE + 1 bytes.
- * @param[in]  buflen The length of buf, in bytes
- * @param[in]  publickey The corresponding public key
- *
- * @return Returns 0 on success, or a nonzero value indicating an error.
- */
-int picnic_read_private_key(picnic_privatekey_t* key, uint8_t* buf, size_t buflen, picnic_publickey_t* publickey);
+int picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t buflen, picnic_publickey_t* publickey);
 
 /**
  * Check that a key pair is valid.

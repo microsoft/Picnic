@@ -230,7 +230,7 @@ int picnic_keygen(picnic_params_t parameters, picnic_publickey_t* pk,
     return 0;
 }
 
-int picnic_sign(picnic_privatekey_t* sk, uint8_t* message, size_t message_len,
+int picnic_sign(picnic_privatekey_t* sk, const uint8_t* message, size_t message_len,
                 uint8_t* signature, size_t* signature_len)
 {
     ENSURE_LIBRARY_INITIALIZED();
@@ -310,8 +310,8 @@ size_t picnic_signature_size(picnic_params_t parameters)
     }
 }
 
-int picnic_verify(picnic_publickey_t* pk, uint8_t* message, size_t message_len,
-                  uint8_t* signature, size_t signature_len)
+int picnic_verify(picnic_publickey_t* pk, const uint8_t* message, size_t message_len,
+                  const uint8_t* signature, size_t signature_len)
 {
     ENSURE_LIBRARY_INITIALIZED();
     int ret;
@@ -355,7 +355,7 @@ int picnic_verify(picnic_publickey_t* pk, uint8_t* message, size_t message_len,
 }
 
 /* Serialize public key */
-int picnic_write_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen)
+int picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t buflen)
 {
     if (key == NULL || buf == NULL) {
         return -1;
@@ -374,7 +374,7 @@ int picnic_write_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen
     return (int)bytesRequired;
 }
 
-int picnic_read_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen)
+int picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t buflen)
 {
     if (key == NULL || buf == NULL) {
         return -1;
@@ -399,7 +399,7 @@ int picnic_read_public_key(picnic_publickey_t* key, uint8_t* buf, size_t buflen)
 }
 
 /* Serialize a private key. */
-int picnic_write_private_key(picnic_privatekey_t* key, uint8_t* buf, size_t buflen)
+int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_t buflen)
 {
     if (key == NULL || buf == NULL) {
         return -1;
@@ -418,7 +418,7 @@ int picnic_write_private_key(picnic_privatekey_t* key, uint8_t* buf, size_t bufl
 }
 
 /* De-serialize a private key. */
-int picnic_read_private_key(picnic_privatekey_t* key, uint8_t* buf, size_t buflen, picnic_publickey_t* publickey)
+int picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t buflen, picnic_publickey_t* publickey)
 {
     if (key == NULL || buf == NULL || publickey == NULL) {
         return -1;

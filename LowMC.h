@@ -46,7 +46,7 @@ typedef enum {
     TRANSFORM_INVALID = 255
 } transform_t;
 
-int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, uint8_t* message, size_t messageByteLength, signature_t* sig, transform_t transform, lowmcparams_t* params);
+int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, const uint8_t* message, size_t messageByteLength, signature_t* sig, transform_t transform, lowmcparams_t* params);
 int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* pubInput, const uint8_t* message, size_t messageByteLength, transform_t transform, lowmcparams_t* params);
 
 void allocateSignature(signature_t* sig, lowmcparams_t* params);

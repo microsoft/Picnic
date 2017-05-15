@@ -1439,7 +1439,7 @@ int random_bytes_default_openssl(uint8_t* buf, size_t len)
     return RAND_bytes(buf, (int)len);
 }
 
-int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, uint8_t* message,
+int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, const uint8_t* message,
          size_t messageByteLength, signature_t* sig, transform_t transform, lowmcparams_t* params)
 {
 #ifdef WITH_AVX
