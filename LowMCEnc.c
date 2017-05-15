@@ -25,6 +25,7 @@
 #include <immintrin.h>
 
 #include "LowMCConstants.h"
+#include "platform.h"
 
 #ifdef __WINDOWS__
     #define DATA_PATH "data\\"
@@ -114,7 +115,7 @@ int readRoundConstants(lowmcparams_t* params, FILE* fp)
     roundConstants = malloc(
         numRounds * sizeof(*roundConstants));
     if (roundConstants == NULL) {
-        fprintf(stderr, "%s: Failed to allocate roundConstants.\n", __FUNCTION__);
+        fprintf(stderr, "%s: Failed to allocate roundConstants.\n", __func__);
         fclose(fp);
         return -1;
     }
@@ -123,7 +124,7 @@ int readRoundConstants(lowmcparams_t* params, FILE* fp)
     roundConstantsVec = _mm_malloc(
         numRounds * sizeof(*roundConstantsVec), 32);
     if (roundConstantsVec == NULL) {
-        fprintf(stderr, "%s: Failed to allocate roundConstantsVec.\n", __FUNCTION__);
+        fprintf(stderr, "%s: Failed to allocate roundConstantsVec.\n", __func__);
         fclose(fp);
         return -1;
     }
@@ -137,7 +138,7 @@ int readRoundConstants(lowmcparams_t* params, FILE* fp)
             (__m256i*)roundConstants[i]);
 #endif
         if (ret != stateWords) {
-            fprintf(stderr, "%s: Failed to read round constants, aborting.\n", __FUNCTION__);
+            fprintf(stderr, "%s: Failed to read round constants, aborting.\n", __func__);
             fclose(fp);
             free(roundConstants);
 #ifdef WITH_AVX
@@ -159,7 +160,7 @@ int readLookupTables(lowmcparams_t* params)
     sprintf(filename, DATA_PATH "lookupTables_%d_%d_%d.bin", params->stateSizeBits, params->numSboxes, params->numRounds);
     fp = fopen(filename, "rb");
     if (fp == NULL) {
-        fprintf(stderr, "%s: Failed to open '%s'.\n", __FUNCTION__, filename);
+        fprintf(stderr, "%s: Failed to open '%s'.\n", __func__, filename);
         return -1;
     }
 
@@ -169,7 +170,7 @@ int readLookupTables(lowmcparams_t* params)
     linearMatricesLookupTable = malloc(
         numRounds * sizeof(*linearMatricesLookupTable));
     if (linearMatricesLookupTable == NULL) {
-        fprintf(stderr, "%s: Failed to allocate linearMatricesLookupTable.\n", __FUNCTION__);
+        fprintf(stderr, "%s: Failed to allocate linearMatricesLookupTable.\n", __func__);
         fclose(fp);
         return -1;
     }
@@ -178,7 +179,7 @@ int readLookupTables(lowmcparams_t* params)
     linearMatricesLookupTableVec = _mm_malloc(
         numRounds * sizeof(*linearMatricesLookupTableVec), 32);
     if (linearMatricesLookupTableVec == NULL) {
-        fprintf(stderr, "%s: Failed to allocate keyMatricesLookupTableVec.\n", __FUNCTION__);
+        fprintf(stderr, "%s: Failed to allocate keyMatricesLookupTableVec.\n", __func__);
         fclose(fp);
         return -1;
     }
@@ -194,7 +195,7 @@ int readLookupTables(lowmcparams_t* params)
                     (__m256i*)linearMatricesLookupTable[i][j][k]);
 #endif
                 if (ret != stateWords) {
-                    fprintf(stderr, "%s: Failed to read look up table, aborting.\n", __FUNCTION__);
+                    fprintf(stderr, "%s: Failed to read look up table, aborting.\n", __func__);
                     fclose(fp);
                     free(linearMatricesLookupTable);
 #ifdef WITH_AVX
@@ -212,7 +213,7 @@ int readLookupTables(lowmcparams_t* params)
     keyMatricesLookupTable = malloc(numRounds * sizeof(*keyMatricesLookupTable));
 
     if (keyMatricesLookupTable == NULL) {
-        fprintf(stderr, "%s: Failed to allocate keyMatricesLookupTable.\n", __FUNCTION__);
+        fprintf(stderr, "%s: Failed to allocate keyMatricesLookupTable.\n", __func__);
         fclose(fp);
         free(linearMatricesLookupTable);
         return -1;
@@ -222,7 +223,7 @@ int readLookupTables(lowmcparams_t* params)
     keyMatricesLookupTableVec = _mm_malloc(numRounds * sizeof(*keyMatricesLookupTableVec), 32);
 
     if (keyMatricesLookupTableVec == NULL) {
-        fprintf(stderr, "%s: Failed to allocate keyMatricesLookupTableVec.\n", __FUNCTION__);
+        fprintf(stderr, "%s: Failed to allocate keyMatricesLookupTableVec.\n", __func__);
         fclose(fp);
         _mm_free(linearMatricesLookupTableVec);
         return -1;
@@ -240,7 +241,7 @@ int readLookupTables(lowmcparams_t* params)
 #endif
 
                 if (ret != stateWords) {
-                    fprintf(stderr, "%s: Failed to read look up table, aborting. \n", __FUNCTION__);
+                    fprintf(stderr, "%s: Failed to read look up table, aborting. \n", __func__);
                     fclose(fp);
                     free(linearMatricesLookupTable);
                     free(keyMatricesLookupTable);

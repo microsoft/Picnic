@@ -22,6 +22,7 @@
 #include "LowMCEnc.h"
 #include "LowMC.h"
 #include "picnic.h"
+#include "platform.h"
 
 static int g_initialized = 0;
 
@@ -124,7 +125,7 @@ int picnicParamsToLowMCParams(picnic_params_t picnicParams, lowmcparams_t* lowmc
         lowmcParams->UnruhGWithInputBytes = lowmcParams->UnruhGWithoutInputBytes + lowmcParams->stateSizeBytes;
         break;
     default:
-        fprintf(stderr, "%s: Unsupported LowMC parameter set (%d). \n", __FUNCTION__, picnicParams);
+        fprintf(stderr, "%s: Unsupported LowMC parameter set (%d). \n", __func__, picnicParams);
         return -1;
     }
 

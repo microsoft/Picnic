@@ -36,6 +36,7 @@
 
 #include "LowMC.h"
 #include "picnic.h"
+#include "platform.h"
 
 #define t 8
 
@@ -209,7 +210,7 @@ bool getAllRandomness(const uint8_t seed[PRG_SEED_LENGTH], uint8_t* tape,
 
     EVP_CIPHER_CTX_init(&ctx);
     if (1 != EVP_EncryptInit_ex(&ctx, EVP_aes_256_ctr(), NULL, seed, iv)) {
-        fprintf(stderr, "%s: Error setting up AES", __FUNCTION__);
+        fprintf(stderr, "%s: Error setting up AES", __func__);
         ERR_print_errors_fp(stderr);
         EVP_CIPHER_CTX_cleanup(&ctx);
         return false;
@@ -994,12 +995,12 @@ void verifyProof(const proof_t* proof, view_t* view1, view_t* view2,
         break;
 
     default:
-        fprintf(stderr, "%s: Invalid Challenge\n", __FUNCTION__);
+        fprintf(stderr, "%s: Invalid Challenge\n", __func__);
         break;
     }
 
     if (!status) {
-        fprintf(stderr, "%s: Failed to generate random tapes, signature verification will fail (but signature may actually be valid)\n", __FUNCTION__);
+        fprintf(stderr, "%s: Failed to generate random tapes, signature verification will fail (but signature may actually be valid)\n", __func__);
     }
 
     free(randBuff);
@@ -1105,7 +1106,7 @@ int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* pubInput,
     if (computed_challengebits != NULL &&
         memcmp(received_challengebits, computed_challengebits,
                numBytes(2 * NUM_ZKB_ROUNDS)) != 0) {
-        printf("%s: Invalid signature. Did not verify.\n", __FUNCTION__);
+        printf("%s: Invalid signature. Did not verify.\n", __func__);
         status = EXIT_FAILURE;
     }
 
@@ -1475,7 +1476,7 @@ int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, uint8_t* me
 
             // Generate random seeds
             if (picnic_random_bytes(seeds[i][j], PRG_SEED_LENGTH) != 1) {
-                fprintf(stderr, "%s: failed to generate random bytes\n", __FUNCTION__);
+                fprintf(stderr, "%s: failed to generate random bytes\n", __func__);
                 return EXIT_FAILURE;
             }
 
@@ -1512,7 +1513,7 @@ int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, uint8_t* me
         for (int j = 0; j < 2; j++) {
             status = getAllRandomness(seeds[k][j], randBuff, params->stateSizeBytes + params->numAndBytes, iv);
             if (!status) {
-                fprintf(stderr, "%s: getAllRandomness failed \n", __FUNCTION__);
+                fprintf(stderr, "%s: getAllRandomness failed \n", __func__);
                 return EXIT_FAILURE;
             }
 
@@ -1524,7 +1525,7 @@ int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* pubInput, uint8_t* me
         // the XOR of other two inputs and the private key
         status = getAllRandomness(seeds[k][2], tape[k].tape[2], params->numAndBytes, iv);
         if (!status) {
-            fprintf(stderr, "%s: getAllRandomness failed \n", __FUNCTION__);
+            fprintf(stderr, "%s: getAllRandomness failed \n", __func__);
             return EXIT_FAILURE;
         }
 
