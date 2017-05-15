@@ -233,7 +233,6 @@ void init_EVP()
     /* Initialize the library */
     ERR_load_crypto_strings();
     OpenSSL_add_all_algorithms();
-    OPENSSL_config(NULL);
 }
 
 void cleanup_EVP()
