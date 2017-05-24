@@ -27,7 +27,7 @@ will install
 This will build the program 'preprocessMatrices'
 
 3. `./preprocessMatrices`  
-This will create precomputed data required to implement LowMC in the directory "data". 
+This will create precomputed data required to implement LowMC in the directory "precomputed_data". 
 It only needs to be run once.
 
 4. `make`  
@@ -47,11 +47,12 @@ Tested on Windows 10 with Visual Studio 2015.
 
 Open the solution in `VisualStudio\pqzk.sln`, build the projects. 
 
-In order to use the library, the folder "data" must contain the precomputed
+In order to use the library, the folder "precomputed_data" must contain the precomputed
 data (as described in step 3 of the Linux instructions). The preprocessMatrices
 program is not built on Windows, because of the m4ri dependency.  One way to
 create the precomputed data on Windows is using the Linux susbsytem for
-Windows, following the Linux instructions above. 
+Windows, following the Linux instructions above. The path to the precomputed data
+may also be specified when initializing the library.
 
 Picnic depends on OpenSSL for AES, SHA-256 and random number generation.  A
 build of OpenSSL (x64) for Windows is included.  To replace it with another
