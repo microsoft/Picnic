@@ -3,7 +3,7 @@ var searchData=
   ['params',['params',['../structpicnic__publickey__t.html#a19ebc009c8c2b9665ea2f58367683d97',1,'picnic_publickey_t::params()'],['../structpicnic__privatekey__t.html#a6c2163dbe1d08c47864eb55fdda1a56a',1,'picnic_privatekey_t::params()']]],
   ['picnic_2eh',['picnic.h',['../picnic_8h.html',1,'']]],
   ['picnic_5fget_5fparam_5fname',['picnic_get_param_name',['../picnic_8h.html#a2e6c06eaa3929b0965a8600d25576d08',1,'picnic.h']]],
-  ['picnic_5finit',['picnic_init',['../picnic_8h.html#a5f502b5cb14032530b2638678197d55b',1,'picnic.h']]],
+  ['picnic_5finit',['picnic_init',['../picnic_8h.html#ab902bfa746ecd12346b488b46107ac5d',1,'picnic.h']]],
   ['picnic_5fkeygen',['picnic_keygen',['../picnic_8h.html#ad9cfd2adea78566c7b7e885e9becb232',1,'picnic.h']]],
   ['picnic_5fmax_5fprivatekey_5fsize',['PICNIC_MAX_PRIVATEKEY_SIZE',['../picnic_8h.html#a4f97ddce951e841eb96a88a6b932bff2',1,'picnic.h']]],
   ['picnic_5fmax_5fpublickey_5fsize',['PICNIC_MAX_PUBLICKEY_SIZE',['../picnic_8h.html#ab17f93cd75c5520e62e3f90152c92a17',1,'picnic.h']]],

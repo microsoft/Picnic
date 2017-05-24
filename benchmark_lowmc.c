@@ -67,7 +67,7 @@ void benchmarkPicnicDirect(const char* nameOfConfig, transform_t transform, picn
     uint8_t message[MESSAGE_LEN];
     memset(&message, 0, sizeof(message));
 
-    if (readLookupTables(&lowmcparams) != 0) {
+    if (readLookupTables(&lowmcparams, NULL) != 0) {
         fprintf(stdout, "Initialization failed (reading look-up tables).\n");
         fflush(stdout);
         exit(-1);
@@ -131,7 +131,7 @@ void benchmarkPicnicAPI(char* nameOfConfig, transform_t transform, picnic_params
     printf("\n Picnic API benchmark: running keyGen, sign & verify for %d iterations of %d rounds each \n",
            NUM_ITER, NUM_ZKB_ROUNDS);
 
-    if (picnic_init(params, 0) != 0) {
+    if (picnic_init(params, NULL, 0) != 0) {
         fprintf(stdout, "Initialization failed.\n");
         fflush(stdout);
         exit(-1);
@@ -227,7 +227,7 @@ int serializationTest(transform_t transform, picnic_params_t params)
     uint8_t message[MESSAGE_LEN];
     memset(&message, 0, sizeof(message));
 
-    if (readLookupTables(&lowmcparams) != 0) {
+    if (readLookupTables(&lowmcparams, NULL) != 0) {
         fprintf(stdout, "Initialization failed (reading look-up tables).\n");
         ret = -1;
         goto Exit;

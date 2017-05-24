@@ -70,9 +70,9 @@
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>rmdir /s /q $(OutDir)data
-mkdir $(OutDir)data
-copy $(SolutionDir)..\data\ $(OutDir)data</Command>
+      <Command>rmdir /s /q $(OutDir)precomputed_data
+mkdir $(OutDir)precomputed_data
+copy $(SolutionDir)..\precomputed_data\ $(OutDir)precomputed_data</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -95,9 +95,9 @@ copy $(SolutionDir)..\data\ $(OutDir)data</Command>
       <GenerateDebugInformation>No</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>rmdir /s /q $(OutDir)data
-mkdir $(OutDir)data
-copy $(SolutionDir)..\data\ $(OutDir)data</Command>
+      <Command>rmdir /s /q $(OutDir)precomputed_data
+mkdir $(OutDir)precomputed_data
+copy $(SolutionDir)..\precomputed_data\ $(OutDir)precomputed_data</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

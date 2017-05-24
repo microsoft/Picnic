@@ -32,7 +32,7 @@ int picnicExample(picnic_params_t parameters)
 
     fprintf(stdout, "Initializing library... ");
     fflush(stdout);
-    if (picnic_init(parameters, 0) != 0) {
+    if (picnic_init(parameters, NULL, 0) != 0) {
         fprintf(stdout, "Initialization failed.\n");
         fflush(stdout);
         exit(-1);

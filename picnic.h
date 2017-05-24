@@ -84,17 +84,19 @@ typedef struct {
  * Initialization is specific to a parameter set.
  *
  * @param[in] params The parameter set that will be used.
- * @param[in] flags  If flags is 1, OpenSSL is not initialized. This is useful
- * if the application using picnic.h also uses OpenSSL, and does not want the
- * picnic_init to perform OpenSSL initialization.  If flags is 1, fucntions in
- * picnic.h assume that OpenSSL has been initialized, and that the SHA-256, and
- * AES algorithms are available.
+ * @param[in] path   (optional) a path where pre-computed data is stored. If
+ * provided, must contain the trailing slash character(s) ('/' or '\\').
+ * @param[in] flags  (optional) If flags is 1, OpenSSL is not initialized. This
+ * is useful if the application using picnic.h also uses OpenSSL, and does not
+ * want the picnic_init to perform OpenSSL initialization.  If flags is 1,
+ * fucntions in picnic.h assume that OpenSSL has been initialized, and that the
+ * SHA-256, and AES algorithms are available.
  *
  * @return 0 on success, nonzero for error
  *
  * @see picnic_shutdown()
  */
-int picnic_init(picnic_params_t params, unsigned int flags);
+int picnic_init(picnic_params_t params, const char* path, unsigned int flags);
 
 /**
  * Free resources allocated by picnic_init().

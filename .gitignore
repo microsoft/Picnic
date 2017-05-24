@@ -252,8 +252,8 @@ paket-files/
 *.sln.iml
 
 # Project specfic files
-data/*.bin
-data/*.h
+precomputed_data/*.bin
+precomputed_data/*.h
 *.o
 benchmark_lowmc
 example

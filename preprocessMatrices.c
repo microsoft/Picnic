@@ -164,9 +164,9 @@ void generatelookupTables(picnic_params_t picnic_params)
 
     FILE * fp;
     char filename[100];
-    sprintf(filename, "data/lookupTables_%d_%d_%d.bin", params.stateSizeBits, params.numSboxes, params.numRounds);
+    sprintf(filename, DEFAULT_DATA_PATH "lookupTables_%d_%d_%d.bin", params.stateSizeBits, params.numSboxes, params.numRounds);
     char filename2[100];
-    sprintf(filename2, "data/lookupTables_%d_%d_%d.h", params.stateSizeBits, params.numSboxes, params.numRounds);
+    sprintf(filename2, DEFAULT_DATA_PATH "lookupTables_%d_%d_%d.h", params.stateSizeBits, params.numSboxes, params.numRounds);
     fp = fopen(filename, "wb");
     FILE * fp2;
     fp2 = fopen(filename2, "w+");

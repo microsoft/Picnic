@@ -27,12 +27,6 @@
 #include "LowMCConstants.h"
 #include "platform.h"
 
-#ifdef __WINDOWS__
-    #define DATA_PATH "data\\"
-#else
-    #define DATA_PATH "data/"
-#endif
-
 #define t 8
 
 uint32_t(*linearMatricesLookupTable)[STATE_SIZE_BITS / t][1 << t][STATE_SIZE_WORDS];
@@ -151,13 +145,23 @@ int readRoundConstants(lowmcparams_t* params, FILE* fp)
     return 0;
 }
 
-int readLookupTables(lowmcparams_t* params)
+int readLookupTables(lowmcparams_t* params, const char* path)
 {
     FILE * fp;
     size_t ret;
-    char filename[100];
+    char filename[256];
 
-    sprintf(filename, DATA_PATH "lookupTables_%d_%d_%d.bin", params->stateSizeBits, params->numSboxes, params->numRounds);
+    if(path == NULL) 
+    {
+        path = DEFAULT_DATA_PATH;
+    }
+    else if(strlen(path) > 220)
+    {
+        fprintf(stderr, "%s: Faield to read lookup tables. Provided path is too long\n", __func__);
+        return -1;
+    }
+
+    sprintf(filename,  "%slookupTables_%d_%d_%d.bin", path, params->stateSizeBits, params->numSboxes, params->numRounds);
     fp = fopen(filename, "rb");
     if (fp == NULL) {
         fprintf(stderr, "%s: Failed to open '%s'.\n", __func__, filename);

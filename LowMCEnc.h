@@ -36,8 +36,11 @@
 void LowMCEnc(const uint32_t* plaintext, uint32_t* ciphertext,
               const uint32_t* key, lowmcparams_t* parameters);
 
-/** Read precomputed data required by LowMCEnc() from processedMatrices.bin */
-int readLookupTables(lowmcparams_t* params);
+/** Read precomputed data required by LowMCEnc(). 
+ *  If the path parameter is NULL, data is read from DEFAULT_DATA_PATH. If the path
+ *  parameter is provided, it must contain the trailing slash, i.e., "mypath/", not "mypath"
+ */
+int readLookupTables(lowmcparams_t* params, const char* path);
 
 /** Free memory allocated by readLookupTables */
 void freeLookupTables();

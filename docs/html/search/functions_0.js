@@ -1,7 +1,7 @@
 var searchData=
 [
   ['picnic_5fget_5fparam_5fname',['picnic_get_param_name',['../picnic_8h.html#a2e6c06eaa3929b0965a8600d25576d08',1,'picnic.h']]],
-  ['picnic_5finit',['picnic_init',['../picnic_8h.html#a5f502b5cb14032530b2638678197d55b',1,'picnic.h']]],
+  ['picnic_5finit',['picnic_init',['../picnic_8h.html#ab902bfa746ecd12346b488b46107ac5d',1,'picnic.h']]],
   ['picnic_5fkeygen',['picnic_keygen',['../picnic_8h.html#ad9cfd2adea78566c7b7e885e9becb232',1,'picnic.h']]],
   ['picnic_5fread_5fprivate_5fkey',['picnic_read_private_key',['../picnic_8h.html#a7a5c1e9fdafe422215aac701162ff17f',1,'picnic.h']]],
   ['picnic_5fread_5fpublic_5fkey',['picnic_read_public_key',['../picnic_8h.html#aebf50705488c857ed7ff30dddc3c6b29',1,'picnic.h']]],

@@ -31,6 +31,12 @@
 #error The implementation of LowMC  assumes STATE_SIZE_WORDS is even
 #endif
 
+ #ifdef __WINDOWS__
+    #define DEFAULT_DATA_PATH "precomputed_data\\"
+ #else
+    #define DEFAULT_DATA_PATH "precomputed_data/"
+ #endif
+
 typedef struct lowmcparams_t {
     uint32_t numRounds;
     uint32_t numSboxes;

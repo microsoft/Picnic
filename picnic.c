@@ -135,7 +135,7 @@ int picnicParamsToLowMCParams(picnic_params_t picnicParams, lowmcparams_t* lowmc
 
 }
 
-int picnic_init(picnic_params_t params, unsigned int flags)
+int picnic_init(picnic_params_t params, const char* path, unsigned int flags)
 {
     /* NOTE: Not threadsafe, init_EVP may end up being called multiple times.
      * and readLookupTables will leak if called multiple times. */
@@ -153,7 +153,7 @@ int picnic_init(picnic_params_t params, unsigned int flags)
             return ret;
         }
 
-        ret = readLookupTables(&lowmcparams);
+        ret = readLookupTables(&lowmcparams, path);
         if (ret != 0) {
             return ret;
         }
