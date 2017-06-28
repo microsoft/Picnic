@@ -201,6 +201,40 @@ uint32_t numBytes(uint32_t numBits)
     return (numBits == 0) ? 0 : ((numBits - 1) / 8 + 1);
 }
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+/* In newer OpenSSL the cipher context is opaque, so we have two versions of
+ * this function. The new version does a dynamic allocation on each call to  
+ * getAllRandomness, which may be expensive, but since we have plans to remove 
+ * OpenSSL as a dependency in a future release, leave it as-is for now. 
+ */
+bool getAllRandomness(const uint8_t seed[PRG_SEED_LENGTH], uint8_t* tape,
+                      uint32_t tapeLengthBytes, const unsigned char iv[16])
+{
+    /* Zero the tape, then encrypt it with AES256-CTR. The seed is the key. */
+
+    EVP_CIPHER_CTX* ctx;
+
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_CIPHER_CTX_init(ctx);
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, seed, iv)) {
+        fprintf(stderr, "%s: Error setting up AES", __func__);
+        ERR_print_errors_fp(stderr);
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    memset(tape, 0, tapeLengthBytes);
+    int len;
+    if (1 != EVP_EncryptUpdate(ctx, tape, &len, tape, tapeLengthBytes) ) {
+        ERR_print_errors_fp(stderr);
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    EVP_CIPHER_CTX_free(ctx);
+    return true;
+}
+#else
 bool getAllRandomness(const uint8_t seed[PRG_SEED_LENGTH], uint8_t* tape,
                       uint32_t tapeLengthBytes, const unsigned char iv[16])
 {
@@ -209,6 +243,7 @@ bool getAllRandomness(const uint8_t seed[PRG_SEED_LENGTH], uint8_t* tape,
     EVP_CIPHER_CTX ctx;
 
     EVP_CIPHER_CTX_init(&ctx);
+
     if (1 != EVP_EncryptInit_ex(&ctx, EVP_aes_256_ctr(), NULL, seed, iv)) {
         fprintf(stderr, "%s: Error setting up AES", __func__);
         ERR_print_errors_fp(stderr);
@@ -227,6 +262,7 @@ bool getAllRandomness(const uint8_t seed[PRG_SEED_LENGTH], uint8_t* tape,
     EVP_CIPHER_CTX_cleanup(&ctx);
     return true;
 }
+#endif
 
 void init_EVP()
 {
@@ -242,7 +278,9 @@ void cleanup_EVP()
     CONF_modules_unload(1);
     EVP_cleanup();
     CRYPTO_cleanup_all_ex_data();
+#if OPENSSL_VERSION_NUMBER < 0x10101000L
     ERR_remove_state(0);
+#endif
     ERR_free_strings();
 }
 

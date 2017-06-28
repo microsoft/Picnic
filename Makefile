@@ -1,7 +1,7 @@
 
 CC=gcc
 WARNING_FLAGS=-Wall -Wextra -Wpedantic -Werror
-CFLAGS= -O3 -march=native $(WARNING_FLAGS) -std=gnu99 -D__LINUX__ -D__X64__
+CFLAGS= -O2 -march=native $(WARNING_FLAGS) -std=gnu99 -D__LINUX__ -D__X64__
 CFLAGS_DEBUG= -g -march=native $(WARNING_FLAGS) -std=gnu99 -fsanitize=address -D__LINUX__ -D__X64__
 LDFLAGS= -lcrypto
 
