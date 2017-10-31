@@ -1,0 +1,7 @@
+Greg Zaverucha
+
+This reference implementation is derived from the earlier Picnic implementation
+at https://github.com/Microsoft/Picnic by Steven Goldfeder and Greg Zaverucha.
+
+The SHA-3 implementation redistributed here is from the Keccak Code Package,
+see https://github.com/gvanas/KeccakCodePackage for authorship. 
