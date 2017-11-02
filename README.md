@@ -2,7 +2,7 @@
 
 The Picnic signature scheme is a family of digital signature schemes secure
 against attacks by quantum computers.  This is a reference implementation of these schemes. 
-The scheme and parameter sets are specified in the [Picnic Specification Document](https://github.com/Microsoft/Picnic/blob/master/spec.pdf).  
+The scheme and parameter sets are specified in the [Picnic Specification Document](https://github.com/Microsoft/Picnic/blob/master/spec.pdf). 
 An [optimized implementation](https://github.com/IAIK/Picnic) is also available.  
 
 A research paper describing the signature scheme is also available.   
@@ -10,8 +10,7 @@ A research paper describing the signature scheme is also available.
   Melissa Chase and David Derler and Steven Goldfeder and Claudio Orlandi and
   Sebastian Ramacher and Christian Rechberger and Daniel Slamanig and Greg
   Zaverucha.   
-  *In Proceedings of [ACM CCS 2017](https://www.sigsac.org/ccs/CCS2017/)* and     
-  *[Cryptology ePrint Archive: Report 2017/279](http://eprint.iacr.org/2017/279)*
+  *Proceedings of [ACM CCS 2017](https://www.sigsac.org/ccs/CCS2017/)* and *[Cryptology ePrint Archive: Report 2017/279](http://eprint.iacr.org/2017/279)*
 
 The library is provided under the MIT License.  The authors are Steven Goldfeder and Greg Zaverucha.
 
