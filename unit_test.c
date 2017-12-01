@@ -122,6 +122,66 @@ int LowMC_test_vectorL5_3()
     return run_lowmc_enc_test(Picnic_L5_FS, __func__, key, plaintext, ciphertext_expected);
 }
 
+int test_serialization_L1()
+{
+    picnic_publickey_t pk;
+    picnic_privatekey_t sk;
+    picnic_publickey_t pk2;
+    picnic_privatekey_t sk2;
+    uint8_t pk_buf[PICNIC_MAX_PUBLICKEY_SIZE];
+    uint8_t sk_buf[PICNIC_MAX_PRIVATEKEY_SIZE];
+
+    int ret = picnic_keygen(Picnic_L1_FS, &pk, &sk);
+
+    if(ret != 0) {
+        printf("Keygen failed, %d\n", ret);
+        return 0;
+    }
+
+    ret = picnic_write_public_key(&pk, pk_buf, sizeof(pk_buf));
+    if(ret <= 1) {
+        printf("Failed to serialize public key\n");
+        return 0;
+    }
+
+    ret = picnic_write_private_key(&sk, sk_buf, sizeof(sk_buf));
+    if(ret <= 1) {
+        printf("Failed to serialize private key\n");
+        return 0;
+    }
+
+    ret = picnic_read_public_key(&pk2, pk_buf, sizeof(pk_buf));
+    if(ret != 0) {
+        printf("Failed to read public key\n");
+        return 0;
+    }
+
+    ret = picnic_read_private_key(&sk2, sk_buf, sizeof(sk_buf));
+    if(ret != 0) {
+        printf("Failed to read private key\n");
+        return 0;
+    }
+
+    
+    ret = picnic_validate_keypair(&sk2, &pk2);
+    if(ret != 0) {
+        printf("Failed to validate key pair 2\n");
+    }
+
+    ret = picnic_validate_keypair(&sk2, &pk);
+    if(ret != 0) {
+        printf("Failed to validate key pair 3\n");
+    }
+
+    ret = picnic_validate_keypair(&sk, &pk2);
+    if(ret != 0) {
+        printf("Failed to validate key pair 4\n");
+    }
+
+
+    return 1;
+}
+
 
 int main()
 {
@@ -155,6 +215,8 @@ int main()
     passed += LowMC_test_vectorL5_3();
     tests_run++;
 
+    passed += test_serialization_L1();
+    tests_run++;
 
     printf("Ran %d tests, %d passed\n", tests_run, passed);
 

@@ -218,14 +218,7 @@ int picnic_validate_keypair(const picnic_privatekey_t* privatekey, const picnic_
  * random_bytes_default, and change the definition of
  * picnic_random_bytes.
  */
-#ifdef USE_NIST_KAT_INSECURE_RNG
-/* For the NIST submission, when generating known-answer-tests (KATs), we
- * must use an RNG with a fixed seed so that re-running the program to
- * generate KATs prduces the same results. The function randombytes is
- * provided by NIST, in the file rng.c. */
-    #include "NIST-KATs/rng.h"
-    #define picnic_random_bytes NIST_randombytes
-#elif SUPERCOP
+#if SUPERCOP
     #define picnic_random_bytes random_bytes_supercop
 #else
     #define PICNIC_BUILD_DEFAULT_RNG 1

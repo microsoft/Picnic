@@ -198,15 +198,6 @@ int picnic_sign(picnic_privatekey_t* sk, const uint8_t* message, size_t message_
         return -1;
     }
 
-#if 0
-    // self-check for debugging, try to verify the sig we just created
-    ret = verify(sig, (uint32_t*)sk->pk->ciphertext, (uint32_t*)sk->pk->plaintext, message, message_len, paramset);
-    if (ret != EXIT_SUCCESS) {
-        fprintf(stderr, "Failed self-test, signature didn't verify.\n");
-        fflush(stderr);
-    }
-#endif
-
     ret = serializeSignature(sig, signature, *signature_len, &paramset);
     if (ret == -1) {
         fprintf(stderr, "Failed to serialize signature\n");
@@ -360,7 +351,7 @@ int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_
     }
 
     size_t n = paramset.stateSizeBytes;
-    size_t bytesRequired = 2 + 3*n;
+    size_t bytesRequired = 1 + 3*n;
     if (buflen < bytesRequired) {
         fprintf(stderr, "%s: buffer provided has %u bytes, but %u are required.\n", __func__, (uint32_t)buflen, (uint32_t)bytesRequired);
         return -1;
@@ -369,12 +360,8 @@ int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_
     buf[0] = (uint8_t)key->params;
 
     memcpy(buf + 1, key->data, n);
-
-    ret = picnic_write_public_key(&(key->pk), buf + 1 + n, buflen - (1 + n));
-    if(ret < 1) {
-        fprintf(stderr, "%s: failed to serialize public key\n", __func__);
-        return -1;
-    }
+    memcpy(buf + 1 + n, key->pk.plaintext, n);
+    memcpy(buf + 1 + 2*n, key->pk.ciphertext, n);
 
     return (int)bytesRequired;
 }
@@ -409,12 +396,8 @@ int picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t
     }
 
     memcpy(key->data, buf + 1, n);
-    if(buf[1 + n] != key->params) {
-        fprintf(stderr, "%s: Mismatching parameter sets\n", __func__);
-        return -1;
-    }
-    memcpy(key->pk.plaintext, buf + 2 + n, n);
-    memcpy(key->pk.ciphertext, buf + 2 + 2*n, n);
+    memcpy(key->pk.plaintext, buf + 1 + n, n);
+    memcpy(key->pk.ciphertext, buf + 1 + 2*n, n);
 
     return 0;
 }
@@ -447,7 +430,7 @@ int picnic_validate_keypair(const picnic_privatekey_t* privatekey, const picnic_
     uint8_t ciphertext[sizeof(publickey->ciphertext)];
     memset(ciphertext, 0x00, sizeof(ciphertext));
     LowMCEnc((uint32_t*)publickey->plaintext, (uint32_t*)ciphertext, (uint32_t*)privatekey->data, &paramset);
-    if (memcmp(ciphertext, publickey->ciphertext, sizeof(ciphertext)) != 0) {
+    if (memcmp(ciphertext, publickey->ciphertext, paramset.stateSizeBytes) != 0) {
         return -1;
     }
 
