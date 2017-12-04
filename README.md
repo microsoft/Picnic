@@ -2,7 +2,7 @@
 
 The Picnic signature scheme is a family of digital signature schemes secure
 against attacks by quantum computers.  This is a reference implementation of these schemes. 
-The scheme and parameter sets are specified in the [Picnic Specification Document](https://github.com/Microsoft/Picnic/blob/master/spec.pdf).  
+The scheme and parameter sets are specified in the [Picnic Specification Document](https://github.com/Microsoft/Picnic/blob/master/spec).  
 
 A research paper describing the signature scheme is also available. 
   **Post-Quantum Zero-Knowledge and Signatures from Symmetric-Key Primitives**  
