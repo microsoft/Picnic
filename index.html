@@ -13,42 +13,50 @@
       <h3>Publications</h3>
         <ul class="publications">
           <li>Melissa Chase, David Derler, Steven Goldfeder, Claudio Orlandi, Sebastian Ramacher, Christian Rechberger, Daniel Slamanig, Greg Zaverucha. <b><i>Post-Quantum Zero-Knowledge and Signatures from Symmetric-Key Primitives.</i></b> <a href="https://www.sigsac.org/ccs/CCS2017/">ACM CCS 2017</a> (see also <a href="https://eprint.iacr.org/2017/279">ePrint 2017/279</a>).</li>	
-        </ul> 
-        <ul class="publications">  
-            <li><b><i><a href="https://github.com/Microsoft/Picnic/tree/master/spec">The Picnic Signature Algorithm Specification</a></i></b>, version 1.0, November 2017. </li>
-        </ul>
-        <ul class="publications">  
-            <li><b><i><a href="https://github.com/Microsoft/Picnic/tree/master/spec">The Picnic Signature Algorithm Design Document</a></i></b>, version 1.0, November 2017. </li>
         </ul>
         <ul class="publications">
-            <li>L&eacute;o Perrin and Angela Promitzer and Sebastian Ramacher and Christian Rechberger. <b><i>Improvements to the Linear Layer of LowMC: A Faster Picnic.</i></b> Cryptology ePrint Archive: <a href="https://eprint.iacr.org/2017/1148">Report 2017/1148</a> </li>
+          <li><b><i><a href="https://github.com/Microsoft/Picnic/tree/master/spec">The Picnic Signature Algorithm Specification</a></i></b>, version 1.0, November 2017. </li>
+        </ul>
+        <ul class="publications">      
+          <li><b><i><a href="https://github.com/Microsoft/Picnic/tree/master/spec">The Picnic Signature Algorithm Design Document</a></i></b>, version 1.0, November 2017. </li>
+        </ul>
+        <ul class="publications">    
+          <li>L&eacute;o Perrin, Angela Promitzer, Sebastian Ramacher, Christian Rechberger. <b><i>Improvements to the Linear Layer of LowMC: A Faster Picnic.</i></b> IACR Cryptology ePrint Archive <a href="https://eprint.iacr.org/2017/1148">Report 2017/1148</a> </li>
         </ul>
 
       <h3>Libraries Implementing Picnic</h3>
-        <ul>
+        <ul class="publications">
             <li><b><a href="https://github.com/IAIK/Picnic">Optimized Implementation</a></b> An implementation optimized for speed, able to make use of processor specific features. </li>	
         </ul>
-        <ul>
+        <ul class="publications">
             <li><b><a href="https://github.com/Microsoft/Picnic">Reference Implementation</a></b> An implementation that tries to be simple, and follow the spec closely, to illustrate the algorithm. </li>	
         </ul> 
 
       <h3>Talks</h3>
         <ul class="publications">
-          <li>Steven Goldfeder and Sebastian Ramacher - <b><i>"Post-Quantum Zero-Knowledge and Signatures from Symmetric-Key Primitives"</i></b> - <a href="https://www.sigsac.org/ccs/CCS2017/">ACM CCS 2017</a>. (<a href="https://microsoft.github.io/Picnic/picnic-ccs-2017.pdf">slides</a>)</li>
+          <li>Steven Goldfeder, Sebastian Ramacher - <b><i>"Post-Quantum Zero-Knowledge and Signatures from Symmetric-Key Primitives"</i></b> - <a href="https://www.sigsac.org/ccs/CCS2017/">ACM CCS 2017</a> (<a href="https://microsoft.github.io/Picnic/picnic-ccs-2017.pdf">slides</a>).</li>
           <li>Sebastian Ramacher - <b><i>"Post-Quantum Zero-Knowledge and Signatures from Symmetric-Key Primitives"</i></b> - <a href="https://cryptoactionsymposium.wordpress.com/">CryptoAction Symposium (COST Action IC1306)</a>.</li> 
-          <li>Melissa Chase - <b><i>"Post-Quantum Signatures from Symmetric-Key Primitives"</i></b> - <a href="https://rwc.iacr.org/2018/index.html">Real-World Crypto 2018</a>. (<a href="">recording</a>)</li> 
+          <li>Melissa Chase - <b><i>"Post-Quantum Signatures from Symmetric-Key Primitives"</i></b> - <a href="https://rwc.iacr.org/2018/index.html">Real-World Crypto 2018</a> (<a href="https://www.youtube.com/watch?v=_J9ESIy8D2o">recording</a>).</li> 
         </ul> 
 
       <h3>Projects and Demos</h3>
       <ul class="publications">
-          <li><a href="https://github.com/open-quantum-safe/liboqs">open-quantum-safe/liboqs:</a> liboqs is a C library for quantum-resistant cryptographic algorithms. It has
-              support for Picnic.
+          <li><a href="https://github.com/open-quantum-safe/liboqs">open-quantum-safe/liboqs:</a> liboqs is a C library for quantum-resistant cryptographic algorithms. It has support for <span class="sc">Picnic</span>.
           </li>
           <li>
-            HSM Demo: We have experimented with using Picnic on a commercial hardware security module, as described in the Design Document.  The software
+            HSM Demo: We have experimented with using <span class="sc">Picnic</span> on a commercial hardware security module, as described in the Design Document.  The software
             is available <a href="picnic_hsm_demo.zip">here</a>.
           </li>
        </ul>
+
+       <h3>Flexibility of the Picnic Design</h3>
+       <p>
+       Although not directly related to <span class="sc">Picnic</span>, other post-quantum secure (privacy enhancing) primitives use the same building blocks as <span class="sc">Picnic</span>. We believe that this work nicely demonstrates the flexibility of the basic <span class="sc">Picnic</span> design, which is why we list the respective papers below.
+         <ul class="publications">
+           <li>Dan Boneh, Saba Eskandarian, Ben Fisch. <b><i>Post-Quantum Group Signatures from Symmetric Primitives.</i></b> IACR Cryptology ePrint Archive <a href="https://eprint.iacr.org/2018/261">Report 2018/261</a>. </li>
+           <li>David Derler, Sebastian Ramacher, Daniel Slamanig. <b><i>Post-Quantum Zero-Knowledge Proofs for Accumulators with Applications to Ring Signatures from Symmetric-Key Primitives.</i></b> <a href="https://eprint.iacr.org/2017/1154">PQCrypto 2018</a>. </li>
+         </ul> 
+       </p>
 
   	  <p><span class="sc">Picnic</span> was designed by a group of cryptographers from <a href="https://www.au.dk/en/">Aarhus University</a>, <a href="https://www.ait.ac.at/">AIT Austrian Institute of Technology GmbH</a>, <a href="https://www.tugraz.at/home/">Graz University of Technology</a>, <a href="https://www.microsoft.com/en-us/research/">Microsoft Research</a>, <a href="https://www.princeton.edu/">Princeton University</a>, and <a href="http://www.dtu.dk/english">Technical University of Denmark</a>. The team includes Melissa Chase, David Derler, Steven Goldfeder, Claudio Orlandi, Sebastian Ramacher, Christian Rechberger, Daniel Slamanig, and Greg Zaverucha.</p>
 
