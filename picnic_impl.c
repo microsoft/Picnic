@@ -243,7 +243,7 @@ void Commit(const uint8_t* seed, const view_t view,
     HashSqueeze(&ctx, hash, params->digestSizeBytes);
 }
 
-/* This is the random "permuatation" function G for Unruh's transform */
+/* This is the random "permutation" function G for Unruh's transform */
 void G(uint8_t viewNumber, const uint8_t* seed, view_t* view, uint8_t* output, paramset_t* params)
 {
     HashInstance ctx;
