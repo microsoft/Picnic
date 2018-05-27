@@ -260,3 +260,9 @@ example
 preprocessMatrices
 *.exe
 
+# OSX Executables and library output objects
+sha3/libshake.dylib
+create_test_vectors
+libpicnic.dylib
+libshake.dylib
+unit_test
