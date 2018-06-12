@@ -37,7 +37,7 @@ Tested on Windows 10 with Visual Studio 2017.
 Open the solution in `VisualStudio\picnic.sln`, and build the projects. 
 
 The project `libpicnic` creates a `.lib` file, containing the functions defined `in picnic.h`.  
-See the `example` project for a simple application that calls functions in 
+See the `example` project for a simple application that calls functions in the library.
 
 ### Acknowledgments
 Thanks to Christian Paquin for providing feedback on picnic.h and for adding
