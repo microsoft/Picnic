@@ -12,7 +12,11 @@
 #ifndef HASH_H
 #define HASH_H
 
+#ifndef SUPERCOP
 #include "sha3/KeccakHash.h"
+#else
+#include <libkeccak.a.headers/KeccakHash.h>
+#endif
 #include "picnic_impl.h"
 
 /* Wrap the Keccak API, checking return values, logging errors, and working
