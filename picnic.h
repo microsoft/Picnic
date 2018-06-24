@@ -219,6 +219,7 @@ int picnic_validate_keypair(const picnic_privatekey_t* privatekey, const picnic_
  * picnic_random_bytes.
  */
 #if SUPERCOP
+    int random_bytes_supercop(uint8_t* buf, size_t len);
     #define picnic_random_bytes random_bytes_supercop
 #else
     #define PICNIC_BUILD_DEFAULT_RNG 1
