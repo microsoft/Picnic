@@ -21,7 +21,11 @@
 	#include <Windows.h>
 	#include <bcrypt.h>
 #else
+  #if defined(__APPLE__)
+    #include "osx/endian.h"
+  #else
     #include <endian.h>
+  #endif
 #endif
 
 #include "picnic_impl.h"

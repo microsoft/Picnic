@@ -39,10 +39,22 @@ Open the solution in `VisualStudio\picnic.sln`, and build the projects.
 The project `libpicnic` creates a `.lib` file, containing the functions defined `in picnic.h`.  
 See the `example` project for a simple application that calls functions in the library.
 
+## OSX Build Instructions
+
+Tested on OSX High Sierra with clang 9.
+
+1. `make`  
+This will build the project. `make debug` will build with symbols and address sanitizer.
+
+2. `./example`  
+Runs an example program that exercises the keygen, sign, verify and
+serialization APIs.  See [example.c](https://github.com/Microsoft/Picnic/blob/master/example.c).
+
 ### Acknowledgments
 Thanks to Christian Paquin for providing feedback on picnic.h and for adding
-support for a Windows build
+support for a Windows build.
 
+Thanks to Robert Krzyzanowski for adding support for an OSX build.
 
 ### Contributing
 
