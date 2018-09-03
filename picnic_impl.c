@@ -188,9 +188,11 @@ bool createRandomTape(const uint8_t* seed, uint8_t* tape,
     HashFinal(&ctx);
     HashSqueeze(&ctx, tape, params->digestSizeBytes);
 
-    /* Expand the hashed seed to create the tape. */
+    /* Expand the hashed seed and output length to create the tape. */
     HashInit(&ctx, params, HASH_PREFIX_NONE);
     HashUpdate(&ctx, tape, params->digestSizeBytes);
+    uint16_t outputBytesLE = toLittleEndian(tapeLengthBytes);
+    HashUpdate(&ctx, (uint8_t*)&outputBytesLE, sizeof(uint16_t));
     HashFinal(&ctx);
     HashSqueeze(&ctx, tape, tapeLengthBytes);
 
