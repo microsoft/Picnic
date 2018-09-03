@@ -297,8 +297,8 @@ int picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t 
 
     buf[0] = (uint8_t)key->params;
 
-    memcpy(buf + 1, key->plaintext, paramset.stateSizeBytes);
-    memcpy(buf + 1 + paramset.stateSizeBytes, key->ciphertext, paramset.stateSizeBytes);
+    memcpy(buf + 1, key->ciphertext, paramset.stateSizeBytes);
+    memcpy(buf + 1 + paramset.stateSizeBytes, key->plaintext, paramset.stateSizeBytes);
 
     return (int)bytesRequired;
 }
@@ -327,11 +327,11 @@ int picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t b
         return -1;
     }
 
-    memset(key->plaintext, 0x00, paramset.stateSizeBytes);
-    memcpy(key->plaintext, buf + 1, paramset.stateSizeBytes);
-
     memset(key->ciphertext, 0x00, paramset.stateSizeBytes);
-    memcpy(key->ciphertext, buf + 1 + paramset.stateSizeBytes, paramset.stateSizeBytes);
+    memcpy(key->ciphertext, buf + 1, paramset.stateSizeBytes);
+
+    memset(key->plaintext, 0x00, paramset.stateSizeBytes);
+    memcpy(key->plaintext, buf + 1 + paramset.stateSizeBytes, paramset.stateSizeBytes);
 
     return 0;
 }
@@ -360,8 +360,8 @@ int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_
     buf[0] = (uint8_t)key->params;
 
     memcpy(buf + 1, key->data, n);
-    memcpy(buf + 1 + n, key->pk.plaintext, n);
-    memcpy(buf + 1 + 2*n, key->pk.ciphertext, n);
+    memcpy(buf + 1 + n, key->pk.ciphertext, n);
+    memcpy(buf + 1 + 2*n, key->pk.plaintext, n);
 
     return (int)bytesRequired;
 }
@@ -396,8 +396,8 @@ int picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t
     }
 
     memcpy(key->data, buf + 1, n);
-    memcpy(key->pk.plaintext, buf + 1 + n, n);
-    memcpy(key->pk.ciphertext, buf + 1 + 2*n, n);
+    memcpy(key->pk.ciphertext, buf + 1 + n, n);
+    memcpy(key->pk.plaintext, buf + 1 + 2*n, n);
 
     return 0;
 }
