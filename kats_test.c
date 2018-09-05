@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #ifndef KATDIR
-#define KATDIR "."
+#define KATDIR "kats"
 #endif
 
 typedef struct {
