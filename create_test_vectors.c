@@ -24,7 +24,7 @@ int createTestVectors(picnic_params_t parameters)
 {
     picnic_publickey_t pk;
     picnic_privatekey_t sk;
-    uint8_t buf[PICNIC_MAX_PUBLICKEY_SIZE + 1];
+    uint8_t buf[PICNIC_MAX_PRIVATEKEY_SIZE + 1];
 
     printf("Picnic test vector with intermediate values for parameter set: %s\n", picnic_get_param_name(parameters) );
 
@@ -67,6 +67,7 @@ int createTestVectors(picnic_params_t parameters)
     ret = picnic_sign(&sk, message, sizeof(message), signature, &signature_len);
     if (ret != 0) {
         printf("picnic_sign failed\n");
+        free(signature);
         exit(-1);
     }
 
@@ -93,9 +94,12 @@ int createTestVectors(picnic_params_t parameters)
     ret = picnic_verify(&pk, message, sizeof(message), signature, signature_len);
     if (ret != 0) {
         printf("picnic_verify failed\n");
+        free(signature);
         exit(-1);
     }
     printf(" success\n");
+
+    free(signature);
 
     return 1;
 
