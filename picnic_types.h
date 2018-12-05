@@ -14,11 +14,13 @@
 #define PICNIC_TYPES_H
 
 #include "picnic_impl.h"
+#include "picnic2_impl.h"
 
 /* Type definitions */
 typedef struct randomTape_t {
-    uint8_t* tape[3];
+    uint8_t** tape;
     uint32_t pos;
+    size_t nTapes;
 } randomTape_t;
 
 typedef struct view_t {
@@ -28,18 +30,33 @@ typedef struct view_t {
 } view_t;
 
 typedef struct commitments_t {
-    uint8_t* hashes[3];
+    uint8_t** hashes;
+    size_t nCommitments;
 } commitments_t;
+
+typedef uint8_t** inputs_t;
+
+typedef struct msgs_t {
+    uint8_t** msgs;         // One for each player
+    size_t pos;
+    int unopened;           // Index of the unopened party, or -1 if all parties opened (when signing)
+} msgs_t;
 
 typedef struct g_commitments_t {
     uint8_t* G[3];
 }g_commitments_t;
 
 typedef struct seeds_t {
-    uint8_t* seed0;
-    uint8_t* seed1;
-    uint8_t* seed2;
+    uint8_t** seed;
+    uint8_t* iSeed;
 } seeds_t;
+
+typedef struct shares_t {
+    uint64_t* shares;
+    size_t numWords;
+} shares_t;
+
+
 
 #define UNUSED_PARAMETER(x) (void)(x)
 
@@ -52,15 +69,29 @@ void freeRandomTape(randomTape_t* tape);
 void allocateProof(proof_t* proof, paramset_t* params);
 void freeProof(proof_t* proof);
 
+void allocateProof2(proof2_t* proof, paramset_t* params);
+void freeProof2(proof2_t* proof);
+
 void allocateSignature(signature_t* sig, paramset_t* params);
 void freeSignature(signature_t* sig, paramset_t* params);
 
 seeds_t* allocateSeeds(paramset_t* params);
 void freeSeeds(seeds_t* seeds);
-uint8_t* getSeed(seeds_t* seeds, uint32_t i, uint32_t j);
 
-commitments_t* allocateCommitments(paramset_t* params);
+commitments_t* allocateCommitments(paramset_t* params, size_t nCommitments);
 void freeCommitments(commitments_t* commitments);
+
+void allocateCommitments2(commitments_t* commitments, paramset_t* params, size_t nCommitments);
+void freeCommitments2(commitments_t* commitments);
+
+inputs_t allocateInputs(paramset_t* params);
+void freeInputs(inputs_t inputs);
+
+msgs_t* allocateMsgs(paramset_t* params);
+void freeMsgs(msgs_t* msgs);
+
+shares_t* allocateShares(size_t count);
+void freeShares(shares_t* shares);
 
 view_t** allocateViews(paramset_t* params);
 void freeViews(view_t** views, paramset_t* params);

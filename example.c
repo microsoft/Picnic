@@ -128,8 +128,13 @@ int picnicExample(picnic_params_t parameters)
     return 0;
 }
 
-int main()
+int main(int argc, char** argv)
 {
+
+    if (argc > 1) {
+        picnicExample(atoi(argv[1]));
+        return 0;
+    }
 
     for (picnic_params_t params = 1; params < PARAMETER_SET_MAX_INDEX; params++) {
         picnicExample(params);

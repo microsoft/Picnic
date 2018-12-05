@@ -12,6 +12,13 @@
 #include "hash.h"
 #include <stdio.h>
 #include <assert.h>
+#if defined(__WINDOWS__)
+    #include <Windows.h>
+    #include <bcrypt.h>
+#else
+    #include <endian.h>
+#endif
+
 
 void HashUpdate(HashInstance* ctx, const uint8_t* data, size_t byteLen)
 {
@@ -54,5 +61,38 @@ void HashSqueeze(HashInstance* ctx, uint8_t* digest, size_t byteLen)
     if (ret != SUCCESS) {
         fprintf(stderr, "%s: Keccak_HashSqueeze failed (returned %d)\n", __func__, ret);
     }
+}
+
+uint16_t toLittleEndian(uint16_t x)
+{
+#if defined(__WINDOWS__)
+    #if BYTE_ORDER == LITTLE_ENDIAN
+        return x;
+    #else
+        return __builtin_bswap16(x);
+    #endif
+#else
+    return htole16(x);
+#endif
+}
+
+uint16_t fromLittleEndian(uint16_t x)
+{
+#if defined(__WINDOWS__)
+    #if BYTE_ORDER == LITTLE_ENDIAN
+        return x;
+    #else
+        return __builtin_bswap16(x);
+    #endif
+#else
+    return le16toh(x);
+#endif
+}
+
+void HashUpdateIntLE(HashInstance* ctx, uint16_t x)
+{
+    uint16_t outputBytesLE = toLittleEndian(x);
+
+    HashUpdate(ctx, (uint8_t*)&outputBytesLE, sizeof(uint16_t));
 }
 

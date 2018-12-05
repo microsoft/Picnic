@@ -32,11 +32,13 @@ typedef struct paramset_t {
     uint32_t andSizeBytes;
     uint32_t UnruhGWithoutInputBytes;
     uint32_t UnruhGWithInputBytes;
-    uint32_t numZKBRounds;
+    uint32_t numMPCRounds;          // T
+    uint32_t numOpenedRounds;       // u
+    uint32_t numMPCParties;         // N
     uint32_t seedSizeBytes;
     uint32_t digestSizeBytes;
     transform_t transform;
-}paramset_t;
+} paramset_t;
 
 typedef struct proof_t {
     uint8_t* seed1;
@@ -49,10 +51,11 @@ typedef struct proof_t {
 
 typedef struct signature_t {
     proof_t* proofs;
-    uint8_t* challengeBits;     // has length numBytes(numZKBRounds*2)
+    uint8_t* challengeBits;     // has length numBytes(numMPCRounds*2)
+    uint8_t* salt;              // has length seedSizeBytes
 } signature_t;
 
-int sign(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, const uint8_t* message, size_t messageByteLength, signature_t* sig, paramset_t* params);
+int sign_picnic1(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, const uint8_t* message, size_t messageByteLength, signature_t* sig, paramset_t* params);
 int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* plaintext, const uint8_t* message, size_t messageByteLength, paramset_t* params);
 
 void allocateSignature(signature_t* sig, paramset_t* params);
@@ -76,5 +79,16 @@ int random_bytes_default(uint8_t* buf, size_t len);
 
 /* Return the number of bytes required to represent the given number of bits */
 uint32_t numBytes(uint32_t numBits);
+
+
+uint32_t ceil_log2(uint32_t x);
+
+
+uint8_t getBit(const uint8_t* array, uint32_t bitNumber);
+uint8_t getBitFromWordArray(const uint32_t* array, uint32_t bitNumber);
+void setBit(uint8_t* bytes, uint32_t bitNumber, uint8_t val);
+void setBitInWordArray(uint32_t* array, uint32_t bitNumber, uint8_t val);
+uint8_t parity(uint32_t* data, size_t len);
+void xor_array(uint32_t* out, const uint32_t * in1, const uint32_t * in2, uint32_t length);
 
 #endif /* PICNIC_IMPL_H */

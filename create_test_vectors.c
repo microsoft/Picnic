@@ -111,6 +111,16 @@ int main(int argc, char** argv)
         printf("provide an integer specifying the parameter set\n");
         exit(-1);
     }
+    picnic_params_t parameters = atoi(argv[1]);
+
+    if (parameters == Picnic2_L1_FS || 
+        parameters == Picnic2_L3_FS ||
+        parameters == Picnic2_L5_FS ) {
+        printf("Picnic2 parameter sets not supported yet\n");
+        exit(-1);
+    }
+
+
     createTestVectors(atoi(argv[1]));
 
     return 0;

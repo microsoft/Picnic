@@ -7,8 +7,8 @@ SHA3LIB=libshake.a
 SHA3_PATH=sha3
 LDFLAGS= $(SHA3_PATH)/$(SHA3LIB) 
 
-SOURCES= picnic_impl.c picnic.c lowmc_constants.c
-PICNIC_OBJECTS= picnic_impl.o picnic.o lowmc_constants.o hash.o picnic_types.o
+SOURCES= picnic_impl.c picnic2_impl.c picnic.c lowmc_constants.c
+PICNIC_OBJECTS= picnic_impl.o picnic2_impl.o tree.o picnic.o lowmc_constants.o hash.o picnic_types.o
 PICNIC_LIB= libpicnic.a
 EXECUTABLE_EXAMPLE=example
 EXECUTABLE_TESTVECTORS=create_test_vectors
@@ -40,6 +40,7 @@ $(EXECUTABLE_BENCHMARK): $(PICNIC_LIB)
 $(EXECUTABLE_KATSTEST): $(PICNIC_LIB)
 	    $(CC) $(@).c $(CFLAGS) $(PICNIC_LIB) -o $@ $(LDFLAGS)
 
+
 .c.o: 
 	    $(CC) -c $(CFLAGS) $< -o $@
 
@@ -55,6 +56,5 @@ clean:
 	    rm $(EXECUTABLE_UNITTEST) 2>/dev/null || true
 	    rm $(EXECUTABLE_TESTVECTORS) 2>/dev/null || true
 	    rm $(EXECUTABLE_BENCHMARK) 2>/dev/null || true
-	    rm $(EXECUTABLE_KATSTEST) 2>/dev/null || true
 		rm $(PICNIC_LIB) 2>/dev/null || true
 		$(MAKE) -C $(SHA3_PATH) clean
