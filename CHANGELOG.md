@@ -1,3 +1,7 @@
+Version 4.0 -- 2018-12-05
+* Update implementation to match spec version 2.0. See Appendix A for a summary
+  of the changes. 
+
 Version 3.0 -- 2018-09-06
 * Fix deviations from specification. The KDF was missing the output length as
   input and the public key was incorrectly serialized. Note that this is breaking
