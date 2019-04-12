@@ -33,6 +33,16 @@ int run_lowmc_enc_test(picnic_params_t param_name, const char* testname, uint8_t
 
     if (memcmp(ciphertext_expected, ciphertext_actual, paramset.stateSizeBytes) != 0) {
         printf("%s: failed, encryption produced wrong ciphertext\n", testname);
+        printf("Got:      ");
+        for(size_t i = 0; i < paramset.stateSizeBytes; i++) {
+            printf("%02X, ", ciphertext_actual[i]);
+        }
+        printf("\nExpected: ");
+        for(size_t i = 0; i < paramset.stateSizeBytes; i++) {
+            printf("%02X, ", ciphertext_expected[i]);
+        }
+        printf("\n");
+
         return 0;
     }
 
@@ -166,16 +176,19 @@ int test_serialization_L1()
     ret = picnic_validate_keypair(&sk2, &pk2);
     if(ret != 0) {
         printf("Failed to validate key pair 2\n");
+        return 0;
     }
 
     ret = picnic_validate_keypair(&sk2, &pk);
     if(ret != 0) {
         printf("Failed to validate key pair 3\n");
+        return 0;
     }
 
     ret = picnic_validate_keypair(&sk, &pk2);
     if(ret != 0) {
         printf("Failed to validate key pair 4\n");
+        return 0;
     }
 
 
@@ -217,6 +230,7 @@ int main()
 
     passed += test_serialization_L1();
     tests_run++;
+
 
     printf("Ran %d tests, %d passed\n", tests_run, passed);
 

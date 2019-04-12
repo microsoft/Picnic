@@ -38,7 +38,7 @@
 
 /* Helper functions */
 
-void printHex(const char* s, uint8_t* data, size_t len)
+void printHex(const char* s, const uint8_t* data, size_t len)
 {
     printf("%s: ", s);
     for (size_t i = 0; i < len; i++) {
@@ -180,7 +180,7 @@ bool createRandomTape(const uint8_t* seed, const uint8_t* salt, uint16_t roundNu
      * length to create the tape. */
     HashInit(&ctx, params, HASH_PREFIX_NONE);
     HashUpdate(&ctx, tape, params->digestSizeBytes);        // Hash the hashed seed
-    HashUpdate(&ctx, salt, params->seedSizeBytes);
+    HashUpdate(&ctx, salt, params->saltSizeBytes);
     HashUpdateIntLE(&ctx, roundNumber);
     HashUpdateIntLE(&ctx, playerNumber);
     HashUpdateIntLE(&ctx, tapeLengthBytes);
@@ -325,7 +325,7 @@ void H3(const uint32_t* circuitOutput, const uint32_t* plaintext, uint32_t** vie
     HashUpdate(&ctx, (uint8_t*)plaintext, params->stateSizeBytes);
 
     /* Hash the salt & message */
-    HashUpdate(&ctx, salt, params->seedSizeBytes);
+    HashUpdate(&ctx, salt, params->saltSizeBytes);
     HashUpdate(&ctx, message, messageByteLength);
 
     HashFinal(&ctx);
@@ -792,7 +792,7 @@ seeds_t* computeSeeds(uint32_t* privateKey, uint32_t*
     HashFinal(&ctx);
 
     // Derive the N*T seeds + 1 salt
-    HashSqueeze(&ctx, allSeeds[0].seed[0], params->seedSizeBytes * (params->numMPCParties * params->numMPCRounds + 1));
+    HashSqueeze(&ctx, allSeeds[0].seed[0], params->seedSizeBytes * (params->numMPCParties * params->numMPCRounds) + params->saltSizeBytes);
 
     return allSeeds;
 }
@@ -811,7 +811,7 @@ int sign_picnic1(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
     /* Compute seeds for all parallel iterations */
     seeds_t* seeds = computeSeeds(privateKey, pubKey, plaintext, message, messageByteLength, params);
 
-    memcpy(sig->salt, seeds[params->numMPCRounds].iSeed, params->seedSizeBytes);
+    memcpy(sig->salt, seeds[params->numMPCRounds].iSeed, params->saltSizeBytes);
 
     //Allocate a random tape (re-used per parallel iteration), and a temporary buffer
     randomTape_t tape;
@@ -903,7 +903,7 @@ int serializeSignature(const signature_t* sig, uint8_t* sigBytes, size_t sigByte
     const uint8_t* challengeBits = sig->challengeBits;
 
     /* Validate input buffer is large enough */
-    size_t bytesRequired = numBytes(2 * params->numMPCRounds) + params->seedSizeBytes +
+    size_t bytesRequired = numBytes(2 * params->numMPCRounds) + params->saltSizeBytes +
                            params->numMPCRounds * (2 * params->seedSizeBytes + params->stateSizeBytes + params->andSizeBytes + params->digestSizeBytes);
 
     if (params->transform == TRANSFORM_UR) {
@@ -919,8 +919,8 @@ int serializeSignature(const signature_t* sig, uint8_t* sigBytes, size_t sigByte
     memcpy(sigBytes, challengeBits, numBytes(2 * params->numMPCRounds));
     sigBytes += numBytes(2 * params->numMPCRounds);
 
-    memcpy(sigBytes, sig->salt, params->seedSizeBytes);
-    sigBytes += params->seedSizeBytes;
+    memcpy(sigBytes, sig->salt, params->saltSizeBytes);
+    sigBytes += params->saltSizeBytes;
 
     for (size_t i = 0; i < params->numMPCRounds; i++) {
 
@@ -996,7 +996,7 @@ int deserializeSignature(signature_t* sig, const uint8_t* sigBytes,
     }
 
     size_t inputShareSize = computeInputShareSize(sigBytes, params->stateSizeBytes, params);
-    size_t bytesExpected = numBytes(2 * params->numMPCRounds) + params->seedSizeBytes +
+    size_t bytesExpected = numBytes(2 * params->numMPCRounds) + params->saltSizeBytes +
                            params->numMPCRounds * (2 * params->seedSizeBytes + params->andSizeBytes + params->digestSizeBytes) + inputShareSize;
 
     if (params->transform == TRANSFORM_UR) {
@@ -1013,8 +1013,8 @@ int deserializeSignature(signature_t* sig, const uint8_t* sigBytes,
         return EXIT_FAILURE;
     }
 
-    memcpy(sig->salt, sigBytes, params->seedSizeBytes);
-    sigBytes += params->seedSizeBytes;
+    memcpy(sig->salt, sigBytes, params->saltSizeBytes);
+    sigBytes += params->saltSizeBytes;
 
     for (size_t i = 0; i < params->numMPCRounds; i++) {
 

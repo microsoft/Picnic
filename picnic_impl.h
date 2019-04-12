@@ -36,6 +36,7 @@ typedef struct paramset_t {
     uint32_t numOpenedRounds;       // u
     uint32_t numMPCParties;         // N
     uint32_t seedSizeBytes;
+    uint32_t saltSizeBytes;
     uint32_t digestSizeBytes;
     transform_t transform;
 } paramset_t;
@@ -52,7 +53,7 @@ typedef struct proof_t {
 typedef struct signature_t {
     proof_t* proofs;
     uint8_t* challengeBits;     // has length numBytes(numMPCRounds*2)
-    uint8_t* salt;              // has length seedSizeBytes
+    uint8_t* salt;              // has length saltSizeBytes
 } signature_t;
 
 int sign_picnic1(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, const uint8_t* message, size_t messageByteLength, signature_t* sig, paramset_t* params);
@@ -62,7 +63,7 @@ void allocateSignature(signature_t* sig, paramset_t* params);
 void freeSignature(signature_t* sig, paramset_t* params);
 
 uint8_t getChallenge(const uint8_t* challenge, size_t round);
-void printHex(const char* s, uint8_t* data, size_t len);
+void printHex(const char* s, const uint8_t* data, size_t len);
 
 void LowMCEnc(const uint32_t* plaintext, uint32_t* output, uint32_t* key, paramset_t* params);
 

@@ -126,15 +126,17 @@ void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, uint8_t 
 
     HashInit(&ctx, params, hashPrefix);
     HashUpdate(&ctx, inputSeed, params->seedSizeBytes);
-    HashUpdate(&ctx, salt, params->seedSizeBytes);
+    HashUpdate(&ctx, salt, params->saltSizeBytes);
     HashUpdateIntLE(&ctx, (uint16_t)repIndex);
     HashUpdateIntLE(&ctx, (uint16_t)nodeIndex);
     HashFinal(&ctx);
-    HashSqueeze(&ctx, digest, params->seedSizeBytes);
+    HashSqueeze(&ctx, digest, 2 * params->seedSizeBytes);
 }
 
 void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex, paramset_t* params)
 {
+    uint8_t tmp[2*MAX_SEED_SIZE_BYTES];
+
     /* Walk the tree, expanding seeds where possible. Compute children of
      * non-leaf nodes. */
     size_t lastNonLeaf = getParent(tree->numNodes - 1);
@@ -144,18 +146,21 @@ void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex, paramset_t* param
             continue;
         }
 
+        hashSeed(tmp, tree->nodes[i], salt, HASH_PREFIX_1, repIndex, i, params);
+
         if (!tree->haveNode[2 * i + 1]) {
-            /* left child = H1(seed_i || salt || t || 2*i + 1) */
-            hashSeed(tree->nodes[2 * i + 1], tree->nodes[i], salt, HASH_PREFIX_1, repIndex, 2 * i + 1, params);
+            /* left child = H_left(seed_i || salt || t || i) */
+            memcpy(tree->nodes[2 * i + 1], tmp, params->seedSizeBytes);
             tree->haveNode[2 * i + 1] = 1;
         }
 
         /* The last non-leaf node will only have a left child when there are an odd number of leaves */
         if (exists(tree, 2 * i + 2) && !tree->haveNode[2 * i + 2]) {
-            /* right child = H2(seed_i || salt || t || 2*i + 2)  */
-            hashSeed(tree->nodes[2 * i + 2], tree->nodes[i], salt, HASH_PREFIX_2, repIndex, 2 * i + 2, params);
+            /* right child = H_right(seed_i || salt || t || i)  */
+            memcpy(tree->nodes[2 * i + 2], tmp + params->seedSizeBytes, params->seedSizeBytes);
             tree->haveNode[2 * i + 2] = 1;
         }
+
     }
 
 }
@@ -173,7 +178,7 @@ tree_t* generateSeeds(size_t nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t re
 
 int isLeafNode(tree_t* tree, size_t node)
 {
-    return (2 * node + 1 > tree->numNodes);
+    return (2 * node + 1 >= tree->numNodes);
 }
 
 int hasSibling(tree_t* tree, size_t node)
@@ -264,7 +269,12 @@ static size_t* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t hideLis
             }
             size_t sibling = getSibling(tree, pathSets[d][i]);
             if (!contains(pathSets[d], hideListSize, sibling )) {
-                // Reveal the seed if we haven't done so already
+                // Determine the seed to reveal 
+                while(!hasRightChild(tree, sibling) && !isLeafNode(tree, sibling)) {
+                    sibling = 2 * sibling + 1; // sibling = leftChild(sibling)
+                }
+
+                // Only reveal if we haven't already 
                 if (!contains(revealed, revealedPos, sibling)) {
                     revealed[revealedPos] = sibling;
                     revealedPos++;
@@ -380,7 +390,7 @@ static void computeParentHash(tree_t* tree, size_t child, uint8_t* salt, paramse
         HashUpdate(&ctx, tree->nodes[2 * parent + 2], params->digestSizeBytes);
     }
 
-    HashUpdate(&ctx, salt, params->seedSizeBytes);
+    HashUpdate(&ctx, salt, params->saltSizeBytes);
     HashUpdateIntLE(&ctx, (uint16_t)parent);
     HashFinal(&ctx);
     HashSqueeze(&ctx, tree->nodes[parent], params->digestSizeBytes);

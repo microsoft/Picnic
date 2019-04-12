@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include <limits.h>
+#include <assert.h>
 #include "picnic_impl.h"
 #include "picnic2_impl.h"
 #include "picnic.h"
@@ -115,8 +116,6 @@ int get_param_set(picnic_params_t picnicParams, paramset_t* paramset)
         pqSecurityLevel = 64;
         paramset->numMPCRounds = 343;
         paramset->numOpenedRounds = 27;
-//        paramset->numMPCRounds = 133;
-//        paramset->numOpenedRounds = 60;
         paramset->numMPCParties = 64;
         paramset->numSboxes = 10;
         paramset->numRounds = 20;
@@ -127,8 +126,6 @@ int get_param_set(picnic_params_t picnicParams, paramset_t* paramset)
         pqSecurityLevel = 96;
         paramset->numMPCRounds = 570;
         paramset->numOpenedRounds = 39;
-//        paramset->numMPCRounds = 198;
-//        paramset->numOpenedRounds = 91;
         paramset->numMPCParties = 64;
         paramset->numSboxes = 10;
         paramset->numRounds = 30;
@@ -139,8 +136,6 @@ int get_param_set(picnic_params_t picnicParams, paramset_t* paramset)
         pqSecurityLevel = 128;
         paramset->numMPCRounds = 803;
         paramset->numOpenedRounds = 50;
-//        paramset->numMPCRounds = 263;
-//        paramset->numOpenedRounds = 121;
         paramset->numMPCParties = 64;
         paramset->numSboxes = 10;
         paramset->numRounds = 38;
@@ -158,6 +153,7 @@ int get_param_set(picnic_params_t picnicParams, paramset_t* paramset)
     paramset->stateSizeBits = paramset->stateSizeBytes * 8;
     paramset->stateSizeWords = paramset->stateSizeBits / WORD_SIZE_BITS;
     paramset->transform = get_transform(picnicParams);
+    paramset->saltSizeBytes = 32; /* same for all parameter sets */
 
     if (paramset->transform == TRANSFORM_UR) {
         paramset->UnruhGWithoutInputBytes = paramset->seedSizeBytes + paramset->andSizeBytes;
@@ -330,7 +326,7 @@ size_t picnic_signature_size(picnic_params_t parameters)
                            + paramset.stateSizeBytes                                    // masked input
                            + paramset.andSizeBytes;                                     //size of broadcast messages
 
-        size_t signatureSize =   paramset.seedSizeBytes + 4 * u                         // challenge and salt
+        size_t signatureSize =   paramset.saltSizeBytes + 4 * u                         // challenge and salt
                                + numTreeValues * paramset.seedSizeBytes                 // iSeed info
                                + numTreeValues * paramset.digestSizeBytes               // commitment opening info for views
                                + 4 * u                                                  // challenge; two length-u lists of 16-bit integers
@@ -342,9 +338,9 @@ size_t picnic_signature_size(picnic_params_t parameters)
     switch (paramset.transform) {
     case TRANSFORM_FS:
         // This is the largest possible FS signature size and would result when no challenges are 0 -- which would require us to include stateSizeBytes for every ZKB round.
-        return paramset.numMPCRounds * (paramset.digestSizeBytes + paramset.stateSizeBytes + numBytes(3 * paramset.numSboxes * paramset.numRounds) +  2 * paramset.seedSizeBytes) + numBytes(2 * paramset.numMPCRounds) + paramset.seedSizeBytes;
+        return paramset.numMPCRounds * (paramset.digestSizeBytes + paramset.stateSizeBytes + numBytes(3 * paramset.numSboxes * paramset.numRounds) +  2 * paramset.seedSizeBytes) + numBytes(2 * paramset.numMPCRounds) + paramset.saltSizeBytes;
     case TRANSFORM_UR:
-        return paramset.numMPCRounds * (paramset.digestSizeBytes + paramset.stateSizeBytes + 2 * numBytes(3 * paramset.numSboxes * paramset.numRounds) +  3 * paramset.seedSizeBytes) + numBytes(2 * paramset.numMPCRounds) + paramset.seedSizeBytes;
+        return paramset.numMPCRounds * (paramset.digestSizeBytes + paramset.stateSizeBytes + 2 * numBytes(3 * paramset.numSboxes * paramset.numRounds) +  3 * paramset.seedSizeBytes) + numBytes(2 * paramset.numMPCRounds) + paramset.saltSizeBytes;
     default:
         return PICNIC_MAX_SIGNATURE_SIZE;
     }
@@ -586,10 +582,92 @@ int picnic_validate_keypair(const picnic_privatekey_t* privatekey, const picnic_
     return 0;
 }
 
-void print_siganture(const uint8_t* sigBytes, size_t sigBytesLen, picnic_params_t picnic_params )
+static void print_signature2(const uint8_t* sigBytes, size_t sigBytesLen, picnic_params_t picnic_params )
+{
+    signature2_t sig;
+    char label[50];
+
+
+    if(picnic_params != Picnic2_L1_FS &&
+       picnic_params != Picnic2_L3_FS &&
+       picnic_params != Picnic2_L5_FS )
+    {
+        printf("Invalid parameter set passed to %s\n", __func__);
+        return;
+    }
+
+
+    paramset_t params;
+    int ret = get_param_set(picnic_params, &params);
+
+    if (ret != EXIT_SUCCESS) {
+        printf("Invalid parameters\n");
+        return;
+    }
+
+    allocateSignature2(&sig, &params);
+
+    ret = deserializeSignature2(&sig, sigBytes, sigBytesLen, &params);
+    if (ret != 0) {
+        printf("Invalid signature; deserialization fails\n");
+        return;
+    }
+
+    proof2_t* proofs = sig.proofs;
+
+    printf("challenge C: ");
+    for(size_t i = 0; i < params.numOpenedRounds; i++) {
+        printf("%u, ", sig.challengeC[i]);
+    }
+    printf("\n");
+    printf("challenge P: ");
+    for(size_t i = 0; i < params.numOpenedRounds; i++) {
+        printf("%u, ", sig.challengeP[i]);
+    }
+    printf("\n");
+    printHex("salt", sig.salt, params.saltSizeBytes);
+    printHex("iSeedInfo", sig.iSeedInfo, sig.iSeedInfoLen);
+    printHex("cvInfo", sig.cvInfo, sig.cvInfoLen);
+
+
+    printf("\n");
+
+    for (size_t i = 0; i < params.numOpenedRounds; i++) {
+
+        uint16_t c = sig.challengeC[i];
+        uint16_t p = sig.challengeP[i];
+
+        printf("u = %u, MPC instance index c = %u, unopened party index = %u\n", (uint32_t)i, c, p);
+
+        printHex("seedInfo", proofs[c].seedInfo, proofs[c].seedInfoLen);
+        printHex("aux", proofs[c].aux, params.andSizeBytes);
+        snprintf(label, sizeof(label), "C[%u][%u]", c,p);
+        printHex(label, proofs[c].C, params.digestSizeBytes);
+        printHex("masked input", proofs[c].input, params.stateSizeBytes);
+        printHex("msgs", proofs[c].msgs, params.stateSizeBytes + params.andSizeBytes);
+        printf("\n");
+    }
+
+    freeSignature2(&sig, &params);
+
+    return;
+
+}
+
+void print_signature(const uint8_t* sigBytes, size_t sigBytesLen, picnic_params_t picnic_params )
 {
     signature_t sig;
     char label[50];
+
+
+    if(picnic_params == Picnic2_L1_FS ||
+       picnic_params == Picnic2_L3_FS ||
+       picnic_params == Picnic2_L5_FS )
+    {
+        print_signature2(sigBytes, sigBytesLen, picnic_params);
+        return;
+    }
+
 
     paramset_t params;
     int ret = get_param_set(picnic_params, &params);
@@ -613,7 +691,7 @@ void print_siganture(const uint8_t* sigBytes, size_t sigBytesLen, picnic_params_
     memcpy(challengeBits, sigBytes, numBytes(2 * params.numMPCRounds));
     sigBytes += numBytes(2 * params.numMPCRounds);
     printHex("challenge", challengeBits, numBytes(2 * params.numMPCRounds));
-    printHex("salt", sig.salt, params.seedSizeBytes);
+    printHex("salt", sig.salt, params.saltSizeBytes);
     printf("\n");
 
     for (size_t i = 0; i < params.numMPCRounds; i++) {

@@ -29,7 +29,7 @@ static const uint8_t HASH_PREFIX_NONE = -1;
 static const uint8_t HASH_PREFIX_0 = 0;
 static const uint8_t HASH_PREFIX_1 = 1;
 static const uint8_t HASH_PREFIX_2 = 2;
-static const uint8_t HASH_PREFIX_3 = 2;
+static const uint8_t HASH_PREFIX_3 = 3;
 static const uint8_t HASH_PREFIX_4 = 4;
 static const uint8_t HASH_PREFIX_5 = 5;
 

@@ -18,7 +18,7 @@
 #define MSG_LEN 500
 
 /* Defined in picni_impl.c */
-void printHex(const char* s, uint8_t* data, size_t len);
+void printHex(const char* s, const uint8_t* data, size_t len);
 
 int createTestVectors(picnic_params_t parameters)
 {
@@ -88,7 +88,7 @@ int createTestVectors(picnic_params_t parameters)
     printf("\n");
 
     /* Print the parsed signature */
-    print_siganture(signature, signature_len, parameters);
+    print_signature(signature, signature_len, parameters);
 
     printf("verify: ");
     ret = picnic_verify(&pk, message, sizeof(message), signature, signature_len);
@@ -111,15 +111,6 @@ int main(int argc, char** argv)
         printf("provide an integer specifying the parameter set\n");
         exit(-1);
     }
-    picnic_params_t parameters = atoi(argv[1]);
-
-    if (parameters == Picnic2_L1_FS || 
-        parameters == Picnic2_L3_FS ||
-        parameters == Picnic2_L5_FS ) {
-        printf("Picnic2 parameter sets not supported yet\n");
-        exit(-1);
-    }
-
 
     createTestVectors(atoi(argv[1]));
 

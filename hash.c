@@ -12,13 +12,7 @@
 #include "hash.h"
 #include <stdio.h>
 #include <assert.h>
-#if defined(__WINDOWS__)
-    #include <Windows.h>
-    #include <bcrypt.h>
-#else
-    #include <endian.h>
-#endif
-
+#include "sha3/brg_endian.h"
 
 void HashUpdate(HashInstance* ctx, const uint8_t* data, size_t byteLen)
 {
@@ -65,27 +59,20 @@ void HashSqueeze(HashInstance* ctx, uint8_t* digest, size_t byteLen)
 
 uint16_t toLittleEndian(uint16_t x)
 {
-#if defined(__WINDOWS__)
-    #if BYTE_ORDER == LITTLE_ENDIAN
-        return x;
-    #else
-        return __builtin_bswap16(x);
-    #endif
+#if (PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN)
+    return (x << 8) | (x >> 8);
 #else
-    return htole16(x);
+    return x;
 #endif
+
 }
 
 uint16_t fromLittleEndian(uint16_t x)
 {
-#if defined(__WINDOWS__)
-    #if BYTE_ORDER == LITTLE_ENDIAN
-        return x;
-    #else
-        return __builtin_bswap16(x);
-    #endif
+#if (PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN)
+    return (x << 8) | (x >> 8);
 #else
-    return le16toh(x);
+    return x;
 #endif
 }
 

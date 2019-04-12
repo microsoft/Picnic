@@ -18,7 +18,6 @@
 #include "picnic_impl.h"
 
 typedef struct proof2_t {
-    uint16_t unOpenedIndex;     // P[t], index of the party that is not opened.
     uint8_t* seedInfo;          // Information required to compute the tree with seeds of of all opened parties
     size_t seedInfoLen;         // Length of seedInfo buffer
     uint8_t* aux;               // Last party's correction bits; NULL if P[t] == N-1

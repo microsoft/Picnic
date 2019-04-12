@@ -70,7 +70,6 @@ void allocateProof2(proof2_t* proof, paramset_t* params)
 {
     memset(proof, 0, sizeof(proof2_t));
 
-    proof->unOpenedIndex = 0;
     proof->seedInfo = NULL;     // Sign/verify code sets it
     proof->seedInfoLen = 0;
     proof->C = malloc(params->digestSizeBytes);
@@ -122,7 +121,7 @@ void allocateSignature(signature_t* sig, paramset_t* params)
     }
 
     sig->challengeBits = (uint8_t*)malloc(numBytes(2 * params->numMPCRounds));
-    sig->salt = (uint8_t*)malloc(params->seedSizeBytes);
+    sig->salt = (uint8_t*)malloc(params->saltSizeBytes);
 }
 
 void freeSignature(signature_t* sig, paramset_t* params)
@@ -138,7 +137,7 @@ void freeSignature(signature_t* sig, paramset_t* params)
 
 void allocateSignature2(signature2_t* sig, paramset_t* params)
 {
-    sig->salt = (uint8_t*)malloc(params->seedSizeBytes);
+    sig->salt = (uint8_t*)malloc(params->saltSizeBytes);
     sig->iSeedInfo = NULL;
     sig->iSeedInfoLen = 0;
     sig->cvInfo = NULL;       // Sign/verify code sets it
@@ -166,9 +165,9 @@ seeds_t* allocateSeeds(paramset_t* params)
 {
     seeds_t* seeds = malloc((params->numMPCRounds + 1) * sizeof(seeds_t));
     size_t nSeeds = params->numMPCParties;
-    uint8_t* slab1 = malloc((params->numMPCRounds * nSeeds + 1) * params->seedSizeBytes);                                                       // Seeds
+    uint8_t* slab1 = malloc((params->numMPCRounds * nSeeds) * params->seedSizeBytes + params->saltSizeBytes);                                   // Seeds
     uint8_t* slab2 = malloc(params->numMPCRounds * nSeeds * sizeof(uint8_t*) + sizeof(uint8_t*) + params->numMPCRounds * sizeof(uint8_t*) );    // pointers to seeds
-    uint8_t* slab3 = malloc((params->numMPCRounds + 1) * params->seedSizeBytes);                                                                // iSeeds, used to derive seeds
+    uint8_t* slab3 = malloc((params->numMPCRounds) * params->seedSizeBytes + params->saltSizeBytes);                                            // iSeeds, used to derive seeds
 
     // We need multiple slabs here, because the seeds are generated with one call to the KDF;
     // they must be stored contiguously

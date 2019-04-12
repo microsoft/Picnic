@@ -36,7 +36,7 @@ extern "C" {
 #define PICNIC_MAX_LOWMC_BLOCK_SIZE 32
 #define PICNIC_MAX_PUBLICKEY_SIZE  (2 * PICNIC_MAX_LOWMC_BLOCK_SIZE + 1)    /**< Largest serialized public key size, in bytes */
 #define PICNIC_MAX_PRIVATEKEY_SIZE (3 * PICNIC_MAX_LOWMC_BLOCK_SIZE + 2)    /**< Largest serialized private key size, in bytes */
-#define PICNIC_MAX_SIGNATURE_SIZE  209506                                   /**< Largest signature size, in bytes */
+#define PICNIC_MAX_SIGNATURE_SIZE  209522                                   /**< Largest signature size, in bytes */
 
 /** Parameter set names */
 typedef enum picnic_params_t {
@@ -231,7 +231,7 @@ int random_bytes_supercop(uint8_t* buf, size_t len);
 
 
 /** Parse the signature and print the individual parts. Used when creating test vectors */
-void print_siganture(const uint8_t* sigBytes, size_t sigBytesLen, picnic_params_t picnic_params);
+void print_signature(const uint8_t* sigBytes, size_t sigBytesLen, picnic_params_t picnic_params);
 
 #ifdef __cplusplus
 }
