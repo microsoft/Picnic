@@ -26,6 +26,8 @@
 #include "hash.h"
 #include "tree.h"
 
+#define MIN(a,b)            (((a) < (b)) ? (a) : (b))
+
 #define MAX_AUX_BYTES ((LOWMC_MAX_AND_GATES + LOWMC_MAX_KEY_BITS) / 8 + 1)
 
 /* Number of leading zeroes of x.
@@ -274,7 +276,7 @@ static void commit_h(uint8_t* digest, commitments_t* C, paramset_t* params)
 
     HashInit(&ctx, params, HASH_PREFIX_NONE);
     for (size_t i = 0; i < params->numMPCParties; i++) {
-        HashUpdate(&ctx, C->hashes[i], params->seedSizeBytes);
+        HashUpdate(&ctx, C->hashes[i], params->digestSizeBytes);
     }
     HashFinal(&ctx);
     HashSqueeze(&ctx, digest, params->digestSizeBytes);
@@ -632,7 +634,7 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
     // Populate C
     uint32_t bitsPerChunkC = ceil_log2(params->numMPCRounds);
     uint32_t bitsPerChunkP = ceil_log2(params->numMPCParties);
-    uint16_t* chunks = calloc(params->digestSizeBytes * 8 / bitsPerChunkP, sizeof(uint16_t));
+    uint16_t* chunks = calloc(params->digestSizeBytes * 8 / MIN(bitsPerChunkC, bitsPerChunkP), sizeof(uint16_t));
 
     size_t countC = 0;
     while (countC < params->numOpenedRounds) {
@@ -812,8 +814,8 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
             msgs[t].unopened = unopened;
 
             tapesToWords(mask_shares, &tapes[t]);
-            int ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
-            if (ret != 0) {
+            int rv = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
+            if (rv != 0) {
                 printf("MPC simulation failed for round %lu, signature invalid\n", t);
                 ret = -1;
                 freeShares(mask_shares);
