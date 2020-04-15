@@ -26,9 +26,13 @@
 #define LOWMC_BLOCK_SIZE_Picnic_L3_UR 24
 #define LOWMC_BLOCK_SIZE_Picnic_L5_FS 32
 #define LOWMC_BLOCK_SIZE_Picnic_L5_UR 32
-#define LOWMC_BLOCK_SIZE_Picnic2_L1_FS 16
-#define LOWMC_BLOCK_SIZE_Picnic2_L3_FS 24
-#define LOWMC_BLOCK_SIZE_Picnic2_L5_FS 32
+#define LOWMC_BLOCK_SIZE_Picnic3_L1 17
+#define LOWMC_BLOCK_SIZE_Picnic3_L3 24
+#define LOWMC_BLOCK_SIZE_Picnic3_L5 32
+#define LOWMC_BLOCK_SIZE_Picnic_L1_full 17
+#define LOWMC_BLOCK_SIZE_Picnic_L3_full 24
+#define LOWMC_BLOCK_SIZE_Picnic_L5_full 32
+
 
 #define LOWMC_BLOCK_SIZE(p) PICNIC_CONCAT(LOWMC_BLOCK_SIZE, p)
 
@@ -264,37 +268,64 @@ static int picnic_test_vector_L5UR(void) {
                                     PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS));
 }
 
-static int picnic2_test_vector_L1FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L1_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic2_L1_FS));
+static int picnic3_test_vector_L1FS(void) {
+  return run_test_vectors_from_file(KATDIR "/kat_picnic3_l1.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L1),
+                                    PICNIC_PRIVATE_KEY_SIZE(Picnic3_L1));
 }
 
-static int picnic2_test_vector_L3FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L3_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic2_L3_FS));
+static int picnic3_test_vector_L3FS(void) {
+  return run_test_vectors_from_file(KATDIR "/kat_picnic3_l3.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L3),
+                                    PICNIC_PRIVATE_KEY_SIZE(Picnic3_L3));
 }
 
-static int picnic2_test_vector_L5FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L5_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic2_L5_FS));
+static int picnic3_test_vector_L5FS(void) {
+  return run_test_vectors_from_file(KATDIR "/kat_picnic3_l5.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L5),
+                                    PICNIC_PRIVATE_KEY_SIZE(Picnic3_L5));
 }
+
+static int picnic_test_vector_L1full(void) {
+  return run_test_vectors_from_file(KATDIR "/kat_l1_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_full),
+                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_full));
+}
+
+static int picnic_test_vector_L3full(void) {
+  return run_test_vectors_from_file(KATDIR "/kat_l3_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L3_full),
+                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L3_full));
+}
+
+static int picnic_test_vector_L5full(void) {
+  return run_test_vectors_from_file(KATDIR "/kat_l5_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L5_full),
+                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_full));
+}
+
 
 typedef int (*test_fn_t)(void);
 
-static const test_fn_t tests[] = {picnic_test_vector_L1FS, picnic_test_vector_L1UR,
-                                  picnic_test_vector_L3FS, picnic_test_vector_L3UR,
-                                  picnic_test_vector_L5FS, picnic_test_vector_L5UR,
-                                  picnic2_test_vector_L1FS, picnic2_test_vector_L3FS,
-                                  picnic2_test_vector_L5FS};
+#if 1
+static const test_fn_t tests[] = { NULL, // 0
+    picnic_test_vector_L1FS, // 1
+    picnic_test_vector_L1UR, // 2
+    picnic_test_vector_L3FS, 
+    picnic_test_vector_L3UR,
+    picnic_test_vector_L5FS, 
+    picnic_test_vector_L5UR,
+    picnic3_test_vector_L1FS, //7
+    picnic3_test_vector_L3FS,
+    picnic3_test_vector_L5FS, 
+    picnic_test_vector_L1full, //9
+    picnic_test_vector_L3full, 
+    picnic_test_vector_L5full};
+#endif
+//static const test_fn_t tests[] = {picnic3_test_vector_L1FS}; 
 
 static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 
 int main(void) {
   int ret = 0;
-  for (size_t s = 0; s < num_tests; ++s) {
+  for (size_t s = 1; s < num_tests; ++s) {
     const int t = tests[s]();
     if (!t) {
-      printf("ERR: Picnic KAT test %zu FAILED (%d)\n", s, t);
+      printf("ERR: Picnic KAT test %s %zu FAILED (%d)\n", picnic_get_param_name(s), s, t );
       ret = -1;
     }
   }

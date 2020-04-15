@@ -25,7 +25,7 @@ typedef struct tree_t {
     size_t numLeaves;   /* The total number of leaves in the tree */
 } tree_t;
 
-/* The largest seed size is 256 bits, for the Picnic2-L5-FS parameter set. */
+/* The largest seed size is 256 bits, for the Picnic3-L5-FS parameter set. */
 #define MAX_SEED_SIZE_BYTES (32)
 
 tree_t* createTree(size_t numLeaves, size_t dataSize);

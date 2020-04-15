@@ -12,7 +12,11 @@
 #include "hash.h"
 #include <stdio.h>
 #include <assert.h>
+#if !defined(SUPERCOP)
 #include "sha3/brg_endian.h"
+#else
+#include <libkeccak.a.headers/brg_endian.h>
+#endif
 
 void HashUpdate(HashInstance* ctx, const uint8_t* data, size_t byteLen)
 {
@@ -26,11 +30,11 @@ void HashUpdate(HashInstance* ctx, const uint8_t* data, size_t byteLen)
 
 void HashInit(HashInstance* ctx, paramset_t* params, uint8_t hashPrefix)
 {
-    if (params->stateSizeBits == 128) {         /* L1 */
-        Keccak_HashInitialize_SHAKE128(ctx);
+    if (params->stateSizeBits == 128 || params->stateSizeBits == 129) {
+        Keccak_HashInitialize_SHAKE128(ctx);    /* L1 */
     }
-    else {                                      /* L3, L5 */
-        Keccak_HashInitialize_SHAKE256(ctx);
+    else {
+        Keccak_HashInitialize_SHAKE256(ctx);    /* L3, L5 */
     }
 
     if (hashPrefix != HASH_PREFIX_NONE) {

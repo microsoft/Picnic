@@ -1,4 +1,7 @@
 Greg Zaverucha
+Sebastian Ramacher
+Daniel Kales
+Steven Goldfeder
 
 This reference implementation is derived from the earlier Picnic implementation
 at https://github.com/Microsoft/Picnic by Steven Goldfeder and Greg Zaverucha.

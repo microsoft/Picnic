@@ -20,7 +20,7 @@ shares_t* allocateShares(size_t count)
 {
     shares_t* shares = malloc(sizeof(shares_t));
 
-    shares->shares = calloc(count, sizeof(uint64_t));
+    shares->shares = calloc(count, sizeof(uint16_t));
     shares->numWords = count;
     return shares;
 }
@@ -33,9 +33,9 @@ void freeShares(shares_t* shares)
 /* Allocate/free functions for dynamically sized types */
 void allocateView(view_t* view, paramset_t* params)
 {
-    view->inputShare = malloc(params->stateSizeBytes);
-    view->communicatedBits = malloc(params->andSizeBytes);
-    view->outputShare = malloc(params->stateSizeBytes);
+    view->inputShare = calloc(params->stateSizeBytes, 1);
+    view->communicatedBits = calloc(params->andSizeBytes, 1);
+    view->outputShare = calloc(params->stateSizeBytes, 1);
 }
 
 void freeView(view_t* view)
@@ -45,11 +45,16 @@ void freeView(view_t* view)
     free(view->outputShare);
 }
 
+size_t getTapeSizeBytes(const paramset_t* params)
+{
+    return 2*params->andSizeBytes;
+}
+
 void allocateRandomTape(randomTape_t* tape, paramset_t* params)
 {
     tape->nTapes = params->numMPCParties;
     tape->tape = malloc(tape->nTapes * sizeof(uint8_t*));
-    size_t tapeSizeBytes = 2 * params->andSizeBytes + params->stateSizeBytes;
+    size_t tapeSizeBytes = getTapeSizeBytes(params);
     uint8_t* slab = calloc(1, tape->nTapes * tapeSizeBytes);
     for (uint8_t i = 0; i < tape->nTapes; i++) {
         tape->tape[i] = slab;
@@ -73,9 +78,9 @@ void allocateProof2(proof2_t* proof, paramset_t* params)
     proof->seedInfo = NULL;     // Sign/verify code sets it
     proof->seedInfoLen = 0;
     proof->C = malloc(params->digestSizeBytes);
-    proof->input = malloc(params->stateSizeBytes);
-    proof->aux = malloc(params->andSizeBytes);
-    proof->msgs = malloc(params->andSizeBytes + params->stateSizeBytes);
+    proof->input = calloc(1, params->stateSizeBytes);
+    proof->aux = calloc(1, params->andSizeBytes);
+    proof->msgs = calloc(1, params->andSizeBytes);
 
 }
 void freeProof2(proof2_t* proof)
@@ -144,6 +149,7 @@ void allocateSignature2(signature2_t* sig, paramset_t* params)
     sig->cvInfoLen = 0;
     sig->challengeC = (uint16_t*)malloc(params->numOpenedRounds * sizeof(uint16_t));
     sig->challengeP = (uint16_t*)malloc(params->numOpenedRounds * sizeof(uint16_t));
+    sig->challengeHash = (uint8_t*)malloc(params->digestSizeBytes);
     sig->proofs = calloc(params->numMPCRounds, sizeof(proof2_t));
     // Individual proofs are allocated during signature generation, only for rounds when neeeded
 }
@@ -155,6 +161,7 @@ void freeSignature2(signature2_t* sig, paramset_t* params)
     free(sig->cvInfo);
     free(sig->challengeC);
     free(sig->challengeP);
+    free(sig->challengeHash);
     for (size_t i = 0; i < params->numMPCRounds; i++) {
         freeProof2(&sig->proofs[i]);
     }
@@ -253,13 +260,15 @@ void allocateCommitments2(commitments_t* commitments, paramset_t* params, size_t
 void freeCommitments2(commitments_t* commitments)
 {
     if (commitments != NULL) {
-        free(commitments->hashes);
+        if(commitments->hashes != NULL) {
+            free(commitments->hashes);
+        }
     }
 }
 
 inputs_t allocateInputs(paramset_t* params)
 {
-    uint8_t* slab = calloc(1, params->numMPCRounds * (params->stateSizeBytes + sizeof(uint8_t*)));
+    uint8_t* slab = calloc(1, params->numMPCRounds * (params->stateSizeWords*sizeof(uint32_t) + sizeof(uint8_t*)));
 
     inputs_t inputs = (uint8_t**)slab;
 
@@ -267,7 +276,7 @@ inputs_t allocateInputs(paramset_t* params)
 
     for (uint32_t i = 0; i < params->numMPCRounds; i++) {
         inputs[i] = (uint8_t*)slab;
-        slab += params->stateSizeBytes;
+        slab += params->stateSizeWords * sizeof(uint32_t);
     }
 
     return inputs;
@@ -281,8 +290,8 @@ void freeInputs(inputs_t inputs)
 msgs_t* allocateMsgs(paramset_t* params)
 {
     msgs_t* msgs = malloc(params->numMPCRounds * sizeof(msgs_t));
-
-    uint8_t* slab = calloc(1, params->numMPCRounds * (params->numMPCParties * (params->andSizeBytes + params->stateSizeBytes) +
+    size_t msgsSize = params->andSizeBytes;
+    uint8_t* slab = calloc(1, params->numMPCRounds * (params->numMPCParties * msgsSize +
                                                       params->numMPCParties * sizeof(uint8_t*)));
 
     for (uint32_t i = 0; i < params->numMPCRounds; i++) {
@@ -293,7 +302,7 @@ msgs_t* allocateMsgs(paramset_t* params)
 
         for (uint32_t j = 0; j < params->numMPCParties; j++) {
             msgs[i].msgs[j] = slab;
-            slab += params->andSizeBytes + params->stateSizeBytes;
+            slab += msgsSize;
         }
     }
 
@@ -306,19 +315,15 @@ void freeMsgs(msgs_t* msgs)
     free(msgs);
 }
 
-
-
 view_t** allocateViews(paramset_t* params)
 {
     // 3 views per round
     view_t** views = malloc(params->numMPCRounds * sizeof(view_t *));
 
     for (size_t i = 0; i < params->numMPCRounds; i++) {
-        views[i] = malloc(3 * sizeof(view_t));
+        views[i] = calloc(3, sizeof(view_t));
         for (size_t j = 0; j < 3; j++) {
             allocateView(&views[i][j], params);
-            //last byte of communiated bits will not nec get set so need to zero it out
-            views[i][j].communicatedBits[params->andSizeBytes - 1] = 0;
         }
     }
 

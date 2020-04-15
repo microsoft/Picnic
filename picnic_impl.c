@@ -23,7 +23,7 @@
 #endif
 
 #include "picnic_impl.h"
-#include "picnic2_impl.h"
+#include "picnic3_impl.h"
 #include "picnic.h"
 #include "platform.h"
 #include "lowmc_constants.h"
@@ -34,7 +34,6 @@
 
 #define VIEW_OUTPUTS(i, j) viewOutputs[(i) * 3 + (j)]
 
-#define DEBUG
 
 /* Helper functions */
 
@@ -72,6 +71,14 @@ void setBitInWordArray(uint32_t* array, uint32_t bitNumber, uint8_t val)
     setBit((uint8_t*)array, bitNumber, val);
 }
 
+void zeroTrailingBits(uint8_t* data, size_t bitLength)
+{
+    size_t byteLength = numBytes(bitLength);
+    for (size_t i = bitLength; i < byteLength * 8; i++) {
+        setBit(data, i, 0);
+    }
+}
+
 uint8_t parity(uint32_t* data, size_t len)
 {
     uint32_t x = data[0];
@@ -103,27 +110,91 @@ void xor_array(uint32_t* out, const uint32_t * in1, const uint32_t * in2, uint32
         out[i] = in1[i] ^ in2[i];
     }
 }
+void xor_three(uint32_t* output, const uint32_t* in1, const uint32_t* in2, const uint32_t* in3, size_t lenBytes)
+{
+    uint8_t* out = (uint8_t*)output;
+    const uint8_t* i1 = (uint8_t*)in1;
+    const uint8_t* i2 = (uint8_t*)in2;
+    const uint8_t* i3 = (uint8_t*)in3;
 
-static void matrix_mul(
+    size_t wholeWords = lenBytes/sizeof(uint32_t);
+    for(size_t i = 0; i < wholeWords; i++) {
+        output[i] = in1[i] ^ in2[i] ^ in3[i];
+    }
+    for(size_t i = wholeWords*sizeof(uint32_t); i < lenBytes; i++) {
+        out[i] = i1[i] ^ i2[i] ^ i3[i]; 
+    }
+}
+
+
+#if 0
+/* Matrix multiplication that works bitwise. Simpler, but much slower than the
+ * word-wise implementation below. */
+void matrix_mul(
     uint32_t* output,
-    uint32_t* state,
+    const uint32_t* state,
     const uint32_t* matrix,
-    paramset_t* params)
+    const paramset_t* params)
 {
     // Use temp to correctly handle the case when state = output
-    uint32_t prod[LOWMC_MAX_STATE_SIZE];
-    uint32_t temp[LOWMC_MAX_STATE_SIZE];
+    uint8_t prod;
+    uint32_t temp[LOWMC_MAX_WORDS]; 
+    temp[params->stateSizeWords-1] = 0;
 
     for (uint32_t i = 0; i < params->stateSizeBits; i++) {
-        for (uint32_t j = 0; j < params->stateSizeWords; j++) {
-            size_t index = i * params->stateSizeWords + j;
-            prod[j] = (state[j] & matrix[index]);
+        prod = 0;
+        for (uint32_t j = 0; j < params->stateSizeBits; j++) {
+            size_t index = i * params->stateSizeWords*WORD_SIZE_BITS + j;            
+            prod ^= (getBitFromWordArray(state,j) & getBitFromWordArray(matrix, index));
         }
-        setBit((uint8_t*)temp, i, parity(&prod[0], params->stateSizeWords));
-
+        setBit((uint8_t*)temp, i, prod);
     }
-    memcpy(output, &temp, params->stateSizeWords * sizeof(uint32_t));
+    memcpy((uint8_t*)output, (uint8_t*)temp, params->stateSizeWords * sizeof(uint32_t));
 }
+#else
+static uint8_t parity32(uint32_t x)
+{
+    /* Compute parity of x using code from Section 5-2 of
+     * H.S. Warren, *Hacker's Delight*, Pearson Education, 2003.
+     * http://www.hackersdelight.org/hdcodetxt/parity.c.txt
+     */
+    uint32_t y = x ^ (x >> 1);
+    y ^= (y >> 2);
+    y ^= (y >> 4);
+    y ^= (y >> 8);
+    y ^= (y >> 16);
+    return y & 1;
+}
+
+void matrix_mul(
+    uint32_t* output,
+    const uint32_t* state,
+    const uint32_t* matrix,
+    const paramset_t* params)
+{
+    // Use temp to correctly handle the case when state = output
+    uint32_t prod;
+    uint32_t temp[LOWMC_MAX_WORDS];
+    temp[params->stateSizeWords-1] = 0;
+
+    uint32_t wholeWords = params->stateSizeBits/WORD_SIZE_BITS;
+    for (uint32_t i = 0; i < params->stateSizeBits; i++) {
+        prod = 0;
+        for (uint32_t j = 0; j < wholeWords; j++) {
+            size_t index = i * params->stateSizeWords + j;
+            prod ^= (state[j] & matrix[index]);
+        }
+        for(uint32_t j = wholeWords*WORD_SIZE_BITS; j < params->stateSizeBits; j++) {
+            size_t index = i * params->stateSizeWords*WORD_SIZE_BITS + j;
+            uint8_t bit = (getBitFromWordArray(state,j) & getBitFromWordArray(matrix, index));
+            prod ^= bit;
+        }
+
+        setBit((uint8_t*)temp, i, parity32(prod));
+    }
+    memcpy((uint8_t*)output, (uint8_t*)temp, params->stateSizeWords * sizeof(uint32_t));
+}
+#endif
 
 static void substitution(uint32_t* state, paramset_t* params)
 {
@@ -140,11 +211,11 @@ static void substitution(uint32_t* state, paramset_t* params)
 
 void LowMCEnc(const uint32_t* plaintext, uint32_t* output, uint32_t* key, paramset_t* params)
 {
-    uint32_t roundKey[LOWMC_MAX_STATE_SIZE / sizeof(uint32_t)];
+    uint32_t roundKey[LOWMC_MAX_WORDS];
 
     if (plaintext != output) {
         /* output will hold the intermediate state */
-        memcpy(output, plaintext, params->stateSizeBytes);
+        memcpy(output, plaintext, params->stateSizeWords*(sizeof(uint32_t)));
     }
 
     matrix_mul(roundKey, key, KMatrix(0, params), params);
@@ -157,7 +228,6 @@ void LowMCEnc(const uint32_t* plaintext, uint32_t* output, uint32_t* key, params
         xor_array(output, output, RConstant(r - 1, params), params->stateSizeWords);
         xor_array(output, output, roundKey, params->stateSizeWords);
     }
-
 }
 
 
@@ -293,7 +363,6 @@ void H3(const uint32_t* circuitOutput, const uint32_t* plaintext, uint32_t** vie
      * byte, make sure it's always zero. */
     challengeBits[numBytes(params->numMPCRounds * 2) - 1] = 0;
 
-    /* Hash input data */
     HashInit(&ctx, params, HASH_PREFIX_1);
 
     /* Hash the output share from each view */
@@ -453,17 +522,12 @@ void mpc_LowMC_verify(view_t* view1, view_t* view2,
     uint32_t* keyShares[2];
     uint32_t* roundKey[2];
 
+    memset(tmp, 0, 4 * params->stateSizeWords * sizeof(uint32_t));
     roundKey[0] = tmp;
     roundKey[1] = roundKey[0] + params->stateSizeWords;
     state[0] = roundKey[1] + params->stateSizeWords;
     state[1] = state[0] + params->stateSizeWords;
 
-    // initialize both roundkeys to 0. they are contingent
-    memset(roundKey[0], 0, 2 * params->stateSizeBytes);
-
-    for (uint32_t i = 0; i < 2; i++) {
-        memset(state[i], 0x00, params->stateSizeBytes);
-    }
     mpc_xor_constant_verify(state, plaintext, params->stateSizeWords, challenge);
 
     keyShares[0] = view1->inputShare;
@@ -503,6 +567,7 @@ void verifyProof(const proof_t* proof, view_t* view1, view_t* view2,
             break;
         }
         memcpy(view2->inputShare, tmp, params->stateSizeBytes);
+
         memcpy(tape->tape[1], tmp + params->stateSizeBytes, params->andSizeBytes);
         break;
 
@@ -535,13 +600,17 @@ void verifyProof(const proof_t* proof, view_t* view1, view_t* view2,
         break;
 
     default:
-        fprintf(stderr, "%s: Invalid Challenge\n", __func__);
+        PRINT_DEBUG(("Invalid Challenge"));
         break;
     }
 
     if (!status) {
-        fprintf(stderr, "%s: Failed to generate random tapes, signature verification will fail (but signature may actually be valid)\n", __func__);
+        PRINT_DEBUG(("Failed to generate random tapes, signature verification will fail (but signature may actually be valid)\n"));
     }
+
+    /* When input shares are read from the tapes, and the length is not a whole number of bytes, the trailing bits must be zero */
+    zeroTrailingBits((uint8_t*)view1->inputShare, params->stateSizeBits);
+    zeroTrailingBits((uint8_t*)view2->inputShare, params->stateSizeBits);
 
     mpc_LowMC_verify(view1, view2, tape, (uint32_t*)tmp, plaintext, params, challenge);
 }
@@ -570,15 +639,12 @@ int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* plaintext,
     view_t* view2s = malloc(params->numMPCRounds * sizeof(view_t));
 
     /* Allocate a slab of memory for the 3rd view's output in each round */
-    view3Slab = malloc(params->stateSizeBytes * params->numMPCRounds);
+    view3Slab = calloc(params->stateSizeBytes, params->numMPCRounds);
     uint32_t* view3Output = view3Slab;     /* pointer into the slab to the current 3rd view */
 
     for (size_t i = 0; i < params->numMPCRounds; i++) {
         allocateView(&view1s[i], params);
         allocateView(&view2s[i], params);
-
-        // last bits of communicatedBits may not be set so zero them
-        view1s[i].communicatedBits[params->andSizeBytes - 1] = 0;
 
         verifyProof(&proofs[i], &view1s[i], &view2s[i],
                     getChallenge(received_challengebits, i), sig->salt, i,
@@ -600,12 +666,9 @@ int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* plaintext,
 
         VIEW_OUTPUTS(i, challenge) = view1s[i].outputShare;
         VIEW_OUTPUTS(i, (challenge + 1) % 3) = view2s[i].outputShare;
-        for (size_t j = 0; j < params->stateSizeWords; j++) {
-            view3Output[j] = view1s[i].outputShare[j] ^ view2s[i].outputShare[j]
-                             ^ pubKey[j];
-        }
+        xor_three(view3Output, view1s[i].outputShare,  view2s[i].outputShare, pubKey, params->stateSizeBytes); 
         VIEW_OUTPUTS(i, (challenge + 2) % 3) = view3Output;
-        view3Output += params->stateSizeWords;
+        view3Output = (uint32_t*) ((uint8_t*)view3Output + params->stateSizeBytes);
     }
 
     computed_challengebits = malloc(numBytes(2 * params->numMPCRounds));
@@ -614,9 +677,8 @@ int verify(signature_t* sig, const uint32_t* pubKey, const uint32_t* plaintext,
        computed_challengebits, sig->salt, message, messageByteLength, gs, params);
 
     if (computed_challengebits != NULL &&
-        memcmp(received_challengebits, computed_challengebits,
-               numBytes(2 * params->numMPCRounds)) != 0) {
-        printf("%s: Invalid signature. Did not verify.\n", __func__);
+        memcmp(received_challengebits, computed_challengebits, numBytes(2 * params->numMPCRounds)) != 0) {
+        PRINT_DEBUG(("Invalid signature. Did not verify\n"));
         status = EXIT_FAILURE;
     }
 
@@ -687,6 +749,21 @@ void mpc_substitution(uint32_t* state[3], randomTape_t* rand, view_t views[3],
     }
 }
 
+#if 0   /* Debugging helper: reconstruct a secret shared value and print it */
+void print_reconstruct(const char* label, uint32_t* s[3], size_t lengthBytes)
+{
+    uint32_t temp[LOWMC_MAX_WORDS] = {0};
+    xor_three(temp, s[0], s[1], s[2], lengthBytes);
+#if 0
+    printf("\n");
+    printHex("s0", (uint8_t*)s[0], lengthBytes); 
+    printHex("s1", (uint8_t*)s[1], lengthBytes); 
+    printHex("s2", (uint8_t*)s[2], lengthBytes); 
+#endif
+    printHex(label, (uint8_t*)temp, lengthBytes);
+}
+#endif
+
 void mpc_LowMC(randomTape_t* tapes, view_t views[3],
                const uint32_t* plaintext, uint32_t* slab, paramset_t* params)
 {
@@ -694,6 +771,7 @@ void mpc_LowMC(randomTape_t* tapes, view_t views[3],
     uint32_t* state[3];
     uint32_t* roundKey[3];
 
+    memset(slab, 0x00, 6 * params->stateSizeWords * sizeof(uint32_t));
     roundKey[0] = slab;
     roundKey[1] = slab + params->stateSizeWords;
     roundKey[2] = roundKey[1] + params->stateSizeWords;
@@ -701,13 +779,10 @@ void mpc_LowMC(randomTape_t* tapes, view_t views[3],
     state[1] = state[0] + params->stateSizeWords;
     state[2] = state[1] + params->stateSizeWords;
 
-    memset(roundKey[0], 0, 3 * params->stateSizeBytes);
     for (int i = 0; i < 3; i++) {
         keyShares[i] = views[i].inputShare;
-        memset(state[i], 0x00, params->stateSizeBytes);
     }
     mpc_xor_constant(state, plaintext, params->stateSizeWords);
-
     mpc_matrix_mul(roundKey, keyShares, KMatrix(0, params), params, 3);
     mpc_xor(state, roundKey, params->stateSizeWords, 3);
 
@@ -722,14 +797,6 @@ void mpc_LowMC(randomTape_t* tapes, view_t views[3],
     for (int i = 0; i < 3; i++) {
         memcpy(views[i].outputShare, state[i], params->stateSizeBytes);
     }
-
-}
-
-void runMPC(view_t views[3], randomTape_t* rand,
-            uint32_t* plaintext, uint32_t* slab, paramset_t* params)
-{
-    rand->pos = 0;
-    mpc_LowMC(rand, views, plaintext, slab, params);
 }
 
 #ifdef PICNIC_BUILD_DEFAULT_RNG
@@ -783,6 +850,7 @@ seeds_t* computeSeeds(uint32_t* privateKey, uint32_t*
     HashInstance ctx;
     seeds_t* allSeeds = allocateSeeds(params);
 
+
     HashInit(&ctx, params, HASH_PREFIX_NONE);
     HashUpdate(&ctx, (uint8_t*)privateKey, params->stateSizeBytes);
     HashUpdate(&ctx, message, messageByteLength);
@@ -824,28 +892,33 @@ int sign_picnic1(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
         for (int j = 0; j < 2; j++) {
             status = createRandomTape(seeds[k].seed[j], sig->salt, k, j, tmp, params->stateSizeBytes + params->andSizeBytes, params);
             if (!status) {
-                fprintf(stderr, "%s: createRandomTape failed \n", __func__);
+                PRINT_DEBUG(("createRandomTape failed \n"));
                 return EXIT_FAILURE;
             }
-
             memcpy(views[k][j].inputShare, tmp, params->stateSizeBytes);
+            zeroTrailingBits((uint8_t*)views[k][j].inputShare, params->stateSizeBits);
             memcpy(tape.tape[j], tmp + params->stateSizeBytes, params->andSizeBytes);
         }
+
         // Now set third party's wires. The random bits are from the seed, the input is
         // the XOR of other two inputs and the private key
         status = createRandomTape(seeds[k].seed[2], sig->salt, k, 2, tape.tape[2], params->andSizeBytes, params);
         if (!status) {
-            fprintf(stderr, "%s: createRandomTape failed \n", __func__);
+            PRINT_DEBUG(("createRandomTape failed \n"));
             return EXIT_FAILURE;
         }
 
-        for (uint32_t j = 0; j < params->stateSizeWords; j++) {
-            views[k][2].inputShare[j] = privateKey[j]
-                                        ^ views[k][0].inputShare[j]
-                                        ^ views[k][1].inputShare[j];
-        }
 
-        runMPC(views[k], &tape, plaintext, (uint32_t*)tmp, params);
+        xor_three(views[k][2].inputShare, privateKey, views[k][0].inputShare, views[k][1].inputShare, params->stateSizeBytes);
+        tape.pos = 0;
+        mpc_LowMC(&tape, views[k], plaintext, (uint32_t*)tmp, params);
+
+        uint32_t temp[LOWMC_MAX_WORDS] = {0};
+        xor_three(temp, views[k][0].outputShare, views[k][1].outputShare, views[k][2].outputShare, params->stateSizeBytes);
+        if(memcmp(temp, pubKey, params->stateSizeBytes) != 0) {
+            PRINT_DEBUG(("Simulation failed; output does not match public key (round = %u)\n", k));
+            return EXIT_FAILURE;
+        }
 
         //Committing
         Commit(seeds[k].seed[0], views[k][0], as[k].hashes[0], params);
@@ -861,19 +934,13 @@ int sign_picnic1(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
 
     //Generating challenges
     uint32_t** viewOutputs = malloc(params->numMPCRounds * 3 * sizeof(uint32_t*));
-
     for (size_t i = 0; i < params->numMPCRounds; i++) {
         for (size_t j = 0; j < 3; j++) {
             VIEW_OUTPUTS(i, j) = views[i][j].outputShare;
         }
     }
 
-    uint32_t output[LOWMC_MAX_STATE_SIZE];
-    for (uint32_t j = 0; j < params->stateSizeWords; j++) {
-        output[j] = (VIEW_OUTPUTS(0, 0))[j] ^ (VIEW_OUTPUTS(0, 1))[j] ^ (VIEW_OUTPUTS(0, 2))[j];
-    }
-
-    H3(output, plaintext, viewOutputs, as,
+    H3(pubKey, plaintext, viewOutputs, as,
        sig->challengeBits, sig->salt, message, messageByteLength, gs, params);
 
     //Packing Z
@@ -882,6 +949,21 @@ int sign_picnic1(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
         prove(proof, getChallenge(sig->challengeBits, i), &seeds[i],
               views[i], &as[i], (gs == NULL) ? NULL : &gs[i], params);
     }
+
+
+#if 0   /* Self-test, verify the signature we just created */
+    printf("\n-----------\n"); 
+    int ret = verify(sig, pubKey, plaintext, message, messageByteLength, params);
+    if(ret != EXIT_SUCCESS) {
+        printf("Self-test of signature verification failed\n");
+        exit(-1);
+    }
+    else {
+        printf("Self-test succeeded\n");
+    }
+    printf("\n-----------\n"); 
+#endif
+
 
     free(tmp);
 
@@ -984,6 +1066,18 @@ static int isChallengeValid(uint8_t* challengeBits, paramset_t* params)
     return 1;
 }
 
+int arePaddingBitsZero(uint8_t* data, size_t bitLength)
+{
+    size_t byteLength = numBytes(bitLength); 
+    for (size_t i = bitLength; i < byteLength * 8; i++) {
+        uint8_t bit_i = getBit(data, i);
+        if (bit_i != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int deserializeSignature(signature_t* sig, const uint8_t* sigBytes,
                          size_t sigBytesLen, paramset_t* params)
 {
@@ -1041,6 +1135,9 @@ int deserializeSignature(signature_t* sig, const uint8_t* sigBytes,
         if (challenge == 1 || challenge == 2) {
             memcpy(proofs[i].inputShare, sigBytes, params->stateSizeBytes);
             sigBytes += params->stateSizeBytes;
+            if(!arePaddingBitsZero((uint8_t*)proofs[i].inputShare, params->stateSizeBits)) {
+                return EXIT_FAILURE;
+            }
         }
 
     }

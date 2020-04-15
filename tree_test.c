@@ -50,7 +50,7 @@ int runSeedTest(uint16_t* hideList, size_t hideListSize, size_t numLeaves, param
     int ret = 1;
 
     if(numLeaves < hideListSize - 1) {
-        printf("%s invalid input\n", __func__);
+        printf("%s invalid input (numLeaves = %lu, hideListSize = %lu)\n", __func__, numLeaves, hideListSize);
         return 0;
     }
 
@@ -321,7 +321,7 @@ int main()
     printf("Running seed tree tests\n");
    
 #if  1
-    for (picnic_params_t p = Picnic2_L1_FS; p < PARAMETER_SET_MAX_INDEX; p++) {
+    for (picnic_params_t p = Picnic3_L1; p <= Picnic3_L5; p++) {
         get_param_set(p, &params); 
         for(size_t i = 0; i < numIterations; i++) {
             passed += runSeedTest(NULL, params.numOpenedRounds, params.numMPCRounds, &params);
@@ -365,7 +365,7 @@ int main()
 
 #if 1
     printf("Running Merkle tree tests\n");
-    for (picnic_params_t p = Picnic2_L1_FS; p < PARAMETER_SET_MAX_INDEX; p++) {
+    for (picnic_params_t p = Picnic3_L1; p <= Picnic3_L5; p++) {
         get_param_set(p, &params); 
         for(size_t i = 0; i < numIterations; i++) {
             passed += runMerkleTest(NULL, params.numOpenedRounds, params.numMPCRounds, &params);

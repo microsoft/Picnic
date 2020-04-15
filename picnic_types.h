@@ -14,7 +14,7 @@
 #define PICNIC_TYPES_H
 
 #include "picnic_impl.h"
-#include "picnic2_impl.h"
+#include "picnic3_impl.h"
 
 /* Type definitions */
 typedef struct randomTape_t {
@@ -52,7 +52,7 @@ typedef struct seeds_t {
 } seeds_t;
 
 typedef struct shares_t {
-    uint64_t* shares;
+    uint16_t* shares;
     size_t numWords;
 } shares_t;
 
@@ -63,6 +63,7 @@ typedef struct shares_t {
 void allocateView(view_t* view, paramset_t* params);
 void freeView(view_t* view);
 
+size_t getTapeSizeBytes(const paramset_t* params);
 void allocateRandomTape(randomTape_t* tape, paramset_t* params);
 void freeRandomTape(randomTape_t* tape);
 

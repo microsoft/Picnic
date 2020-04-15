@@ -4,7 +4,7 @@ The Picnic signature scheme is a family of digital signature schemes secure
 against attacks by quantum computers.  This is a reference implementation of these schemes. 
 The scheme and parameter sets are specified in the [Picnic Specification Document](https://github.com/Microsoft/Picnic/blob/master/spec).
 
-A research papers describing the signature scheme are also available on the [Picnic website](https://microsoft.github.io/Picnic/).
+Research papers describing the signature scheme are also available on the [Picnic website](https://microsoft.github.io/Picnic/).
 
 The library is provided under the MIT License.  The authors are Steven Goldfeder and Greg Zaverucha.
 
@@ -15,8 +15,7 @@ The library builds a static library.  The public API surface is defined in [picn
 Tested on Ubuntu Linux, and the Windows Subsystem for Linux on Windows 10 (build 1709).
 
 1. `make`  
-This will build the project.  `make debug` will build with symbols and address
-sanitizer.
+This will build the project.  `make debug` will build with symbols.
 
 2. `./example`  
 Runs an example program that exercises the keygen, sign, verify and

@@ -47,10 +47,13 @@ typedef enum picnic_params_t {
     Picnic_L3_UR = 4,
     Picnic_L5_FS = 5,
     Picnic_L5_UR = 6,
-    Picnic2_L1_FS = 7,
-    Picnic2_L3_FS = 8,
-    Picnic2_L5_FS = 9,
-    PARAMETER_SET_MAX_INDEX = 10
+    Picnic3_L1 = 7,
+    Picnic3_L3 = 8,
+    Picnic3_L5 = 9,
+    Picnic_L1_full = 10,
+    Picnic_L3_full = 11,
+    Picnic_L5_full = 12,
+    PARAMETER_SET_MAX_INDEX = 13
 } picnic_params_t;
 
 /** Public key */

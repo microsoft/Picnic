@@ -17,6 +17,16 @@
 #include <stdint.h>
 #include <stddef.h>
 
+//#define DEBUG
+
+/* Macro that wraps printf and only produces output when DEBUG is defined */
+#ifdef DEBUG
+    #define PRINT_DEBUG(printf_args) printf("%s %s:%d : ", __func__, __FILE__, __LINE__); printf printf_args; fflush(stdout);
+#else
+    #define PRINT_DEBUG(args)   /* Nothing */
+#endif
+
+
 typedef enum {
     TRANSFORM_FS = 0,
     TRANSFORM_UR = 1,
@@ -80,16 +90,16 @@ int random_bytes_default(uint8_t* buf, size_t len);
 
 /* Return the number of bytes required to represent the given number of bits */
 uint32_t numBytes(uint32_t numBits);
-
-
 uint32_t ceil_log2(uint32_t x);
-
-
 uint8_t getBit(const uint8_t* array, uint32_t bitNumber);
 uint8_t getBitFromWordArray(const uint32_t* array, uint32_t bitNumber);
 void setBit(uint8_t* bytes, uint32_t bitNumber, uint8_t val);
 void setBitInWordArray(uint32_t* array, uint32_t bitNumber, uint8_t val);
 uint8_t parity(uint32_t* data, size_t len);
+uint8_t parityBitstring(uint32_t* input, size_t bitlength);
 void xor_array(uint32_t* out, const uint32_t * in1, const uint32_t * in2, uint32_t length);
+void matrix_mul(uint32_t* output, const uint32_t* state, const uint32_t* matrix, const paramset_t* params);
+int arePaddingBitsZero(uint8_t* data, size_t bitLength);
+void zeroTrailingBits(uint8_t* data, size_t bitLength);
 
 #endif /* PICNIC_IMPL_H */
