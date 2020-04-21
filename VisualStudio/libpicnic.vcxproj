@@ -22,7 +22,7 @@
     <ClCompile Include="..\hash.c" />
     <ClCompile Include="..\lowmc_constants.c" />
     <ClCompile Include="..\picnic.c" />
-    <ClCompile Include="..\picnic2_impl.c" />
+    <ClCompile Include="..\picnic3_impl.c" />
     <ClCompile Include="..\picnic_impl.c" />
     <ClCompile Include="..\picnic_types.c" />
     <ClCompile Include="..\sha3\KeccakHash.c" />
@@ -34,7 +34,7 @@
     <ClInclude Include="..\hash.h" />
     <ClInclude Include="..\lowmc_constants.h" />
     <ClInclude Include="..\picnic.h" />
-    <ClInclude Include="..\picnic2_impl.h" />
+    <ClInclude Include="..\picnic3_impl.h" />
     <ClInclude Include="..\picnic_impl.h" />
     <ClInclude Include="..\picnic_types.h" />
     <ClInclude Include="..\platform.h" />
