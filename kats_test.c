@@ -15,7 +15,7 @@
 #include <stdlib.h>
 
 #ifndef KATDIR
-#define KATDIR "kats"
+#define KATDIR "../kats"
 #endif
 #define PICNIC_CONCAT2(a, b) a##_##b
 #define PICNIC_CONCAT(a, b) PICNIC_CONCAT2(a, b)

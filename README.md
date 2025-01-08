@@ -10,21 +10,41 @@ The library is provided under the MIT License.  The authors are Steven Goldfeder
 
 The library builds a static library.  The public API surface is defined in [picnic.h](https://github.com/Microsoft/Picnic/blob/master/picnic.h).
 
+## `aarch64` Support
+
+The library is modified for supporting `aarch64` (including MacBook). The modifications contain:
+
+- From makefile to CMake: Replace `makefile` to `CMakeList.txt`.
+- `kat_test.c`, line 18: change `#define KATDIR "kats"` to `#define KATDIR "../kats"`.
+- `picnic_impl.c`, line 806: change `#if defined(__LINUX__)` to `#if defined(__LINUX__) || defined(__linux__) || defined(__MACH__)`.
+
 ## Linux Build Instructions
 
-Tested on Ubuntu Linux, and the Windows Subsystem for Linux on Windows 10 (build 1709).
+Tested on MacBook (Apple M1 Pro), Ubuntu Linux, and the Windows Subsystem for Linux on Windows 10 (build 1709).
 
-1. `make`  
-This will build the project.  `make debug` will build with symbols.
+### Compile
 
-2. `./example`  
+```shell
+mkdir build # you must create a sub-dictionary, otherwise `kats_test` would fail (because `KATDIR` is defined as `../kats`).
+cd build
+cmake ..
+make
+make test
+```
+
+### Example
+
+```shell
+./example
+```
+
 Runs an example program that exercises the keygen, sign, verify and
 serialization APIs.  See [example.c](https://github.com/Microsoft/Picnic/blob/master/example.c).
 
 
 ## Windows Build Instructions
 
-Tested on Windows 10 with Visual Studio 2017.
+Tested on Windows 10 with Visual Studio 2022 (community version).
 
 Open the solution in `VisualStudio\picnic.sln`, and build the projects. 
 

@@ -803,7 +803,7 @@ void mpc_LowMC(randomTape_t* tapes, view_t views[3],
 int random_bytes_default(uint8_t* buf, size_t len)
 {
 
-#if defined(__LINUX__)
+#if defined(__LINUX__) || defined(__linux__) || defined(__MACH__)
     FILE* urandom = fopen("/dev/urandom", "r");
     if (urandom == NULL) {
         return -1;
